@@ -1,0 +1,2138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OEE Management System — PolyCreation</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&family=Inter:wght@300;400;500;600&display=swap');
+
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#0d0f14;--bg2:#12151c;--bg3:#181d27;--bg4:#1e2535;
+  --border:#252d3d;--border2:#2e3a50;
+  --text:#e8edf5;--text2:#8fa3c0;--text3:#4d6280;
+  --blue:#3b82f6;--blue2:#1d4ed8;--blue-glow:rgba(59,130,246,.2);
+  --green:#10b981;--green2:#059669;--green-glow:rgba(16,185,129,.2);
+  --amber:#f59e0b;--amber2:#d97706;--amber-glow:rgba(245,158,11,.2);
+  --red:#ef4444;--red2:#dc2626;--red-glow:rgba(239,68,68,.2);
+  --purple:#8b5cf6;--purple2:#7c3aed;--purple-glow:rgba(139,92,246,.2);
+  --cyan:#06b6d4;--cyan2:#0891b2;
+  --radius:8px;--radius-lg:12px;--radius-xl:16px;
+  --shadow:0 4px 24px rgba(0,0,0,.4);
+  --font-display:'Rajdhani',sans-serif;
+  --font-body:'Inter',sans-serif;
+  --font-mono:'JetBrains Mono',monospace;
+  --sidebar:220px;
+}
+
+body{font-family:var(--font-body);background:var(--bg);color:var(--text);font-size:13px;min-height:100vh;overflow-x:hidden}
+input,select,textarea,button{font-family:var(--font-body)}
+
+/* ═══ SCROLLBAR ═══════════════════════════════════════════════ */
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:10px}
+
+/* ═══ LOGIN ════════════════════════════════════════════════════ */
+#login-screen{
+  min-height:100vh;display:flex;align-items:center;justify-content:center;
+  background:radial-gradient(ellipse at 20% 50%,#0f2044 0%,#0d0f14 60%),
+             radial-gradient(ellipse at 80% 20%,#0e1a2e 0%,transparent 50%);
+  position:relative;overflow:hidden;
+}
+#login-screen::before{
+  content:'';position:absolute;width:600px;height:600px;border-radius:50%;
+  background:radial-gradient(circle,rgba(59,130,246,.06) 0%,transparent 70%);
+  top:-100px;left:-100px;pointer-events:none;
+}
+#login-screen::after{
+  content:'';position:absolute;width:400px;height:400px;border-radius:50%;
+  background:radial-gradient(circle,rgba(139,92,246,.04) 0%,transparent 70%);
+  bottom:-50px;right:-50px;pointer-events:none;
+}
+.login-box{
+  background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-xl);
+  padding:2.5rem;width:380px;position:relative;z-index:1;
+  box-shadow:0 20px 60px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.03);
+}
+.login-brand{text-align:center;margin-bottom:2rem}
+.login-logo{
+  width:64px;height:64px;margin:0 auto 12px;
+  background:linear-gradient(135deg,var(--blue),var(--purple));
+  border-radius:16px;display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-display);font-size:22px;font-weight:700;color:#fff;
+  box-shadow:0 8px 32px rgba(59,130,246,.3);
+}
+.login-title{font-family:var(--font-display);font-size:22px;font-weight:700;color:var(--text);letter-spacing:.5px}
+.login-sub{font-size:12px;color:var(--text3);margin-top:4px}
+.login-label{font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:6px}
+.login-input{
+  width:100%;padding:10px 14px;background:var(--bg3);border:1px solid var(--border2);
+  border-radius:var(--radius);color:var(--text);font-size:13px;outline:none;transition:border .15s;
+  margin-bottom:.75rem;
+}
+.login-input:focus{border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-glow)}
+.login-role{display:flex;gap:8px;margin-bottom:1rem}
+.role-btn{
+  flex:1;padding:8px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);
+  color:var(--text2);font-size:12px;font-weight:600;cursor:pointer;text-align:center;transition:all .15s;
+}
+.role-btn.active{background:var(--blue2);border-color:var(--blue);color:#fff}
+.btn-login{
+  width:100%;padding:11px;background:linear-gradient(135deg,var(--blue),var(--blue2));
+  border:none;border-radius:var(--radius);color:#fff;font-size:14px;font-weight:600;
+  cursor:pointer;font-family:var(--font-display);letter-spacing:.5px;transition:all .2s;
+  box-shadow:0 4px 16px rgba(59,130,246,.3);
+}
+.btn-login:hover{transform:translateY(-1px);box-shadow:0 6px 24px rgba(59,130,246,.4)}
+.login-err{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:#fca5a5;border-radius:var(--radius);padding:8px 12px;font-size:12px;margin-bottom:1rem;display:none;text-align:center}
+
+/* ═══ APP SHELL ════════════════════════════════════════════════ */
+#app{display:none;flex-direction:column;min-height:100vh}
+
+/* ─ TOPBAR ─ */
+.topbar{
+  height:54px;background:var(--bg2);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;padding:0 1.25rem;gap:12px;
+  position:sticky;top:0;z-index:200;flex-shrink:0;
+}
+.topbar-brand{display:flex;align-items:center;gap:10px;margin-right:auto}
+.topbar-logo{
+  width:30px;height:30px;background:linear-gradient(135deg,var(--blue),var(--purple));
+  border-radius:8px;display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-display);font-size:12px;font-weight:700;color:#fff;flex-shrink:0;
+}
+.topbar-name{font-family:var(--font-display);font-size:16px;font-weight:700;color:var(--text);letter-spacing:.5px}
+.topbar-clock{font-family:var(--font-mono);font-size:13px;color:var(--text2);background:var(--bg3);padding:5px 12px;border-radius:6px;border:1px solid var(--border);white-space:nowrap}
+.topbar-user{
+  display:flex;align-items:center;gap:8px;padding:5px 12px 5px 8px;
+  background:var(--bg3);border:1px solid var(--border);border-radius:20px;cursor:pointer;
+}
+.topbar-avatar{width:26px;height:26px;background:linear-gradient(135deg,var(--blue),var(--purple));border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff}
+.topbar-username{font-size:12px;font-weight:600;color:var(--text)}
+.topbar-role-badge{font-size:10px;padding:2px 7px;border-radius:10px;font-weight:600}
+.role-main{background:rgba(139,92,246,.2);color:#c4b5fd}
+.role-logger{background:rgba(16,185,129,.2);color:#6ee7b7}
+.topbar-btn{background:var(--bg3);border:1px solid var(--border);color:var(--text2);padding:6px 12px;border-radius:var(--radius);font-size:12px;cursor:pointer;display:inline-flex;align-items:center;gap:5px;transition:all .15s;white-space:nowrap}
+.topbar-btn:hover{border-color:var(--blue);color:var(--blue)}
+
+/* ─ LAYOUT ─ */
+.app-body{display:flex;flex:1;min-height:calc(100vh - 54px)}
+.sidebar{
+  width:var(--sidebar);background:var(--bg2);border-right:1px solid var(--border);
+  flex-shrink:0;padding:.75rem 0;position:sticky;top:54px;height:calc(100vh - 54px);overflow-y:auto;
+}
+.nav-group{padding:0 .5rem;margin-bottom:.5rem}
+.nav-label{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;padding:4px 10px;margin-bottom:2px}
+.nav-item{
+  display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:var(--radius);
+  cursor:pointer;color:var(--text2);font-size:12.5px;font-weight:500;transition:all .15s;margin-bottom:1px;
+}
+.nav-item:hover{background:var(--bg4);color:var(--text)}
+.nav-item.active{background:rgba(59,130,246,.12);color:var(--blue);font-weight:600}
+.nav-item.active .nav-icon{color:var(--blue)}
+.nav-icon{font-size:15px;width:18px;text-align:center;flex-shrink:0}
+.nav-divider{height:1px;background:var(--border);margin:.5rem .75rem}
+
+.content{flex:1;padding:1.25rem;overflow-y:auto;min-width:0}
+.page{display:none}.page.active{display:block}
+.page-title{font-family:var(--font-display);font-size:22px;font-weight:700;color:var(--text);margin-bottom:2px;letter-spacing:.3px}
+.page-sub{font-size:12px;color:var(--text3);margin-bottom:1.25rem}
+
+/* ═══ COMPONENTS ════════════════════════════════════════════════ */
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.1rem;margin-bottom:1rem}
+.card-title{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.75rem}
+.card.blue{border-top:2px solid var(--blue)}
+.card.green{border-top:2px solid var(--green)}
+.card.amber{border-top:2px solid var(--amber)}
+.card.red{border-top:2px solid var(--red)}
+.card.purple{border-top:2px solid var(--purple)}
+.card.cyan{border-top:2px solid var(--cyan)}
+
+/* OEE GAUGE */
+.oee-big{text-align:center}
+.oee-ring{position:relative;width:160px;height:160px;margin:0 auto 12px}
+.oee-ring svg{transform:rotate(-90deg)}
+.oee-ring-track{fill:none;stroke:var(--border2);stroke-width:12}
+.oee-ring-fill{fill:none;stroke-width:12;stroke-linecap:round;transition:stroke-dashoffset 1s ease}
+.oee-val{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  font-family:var(--font-display);font-size:28px;font-weight:700;color:var(--text);line-height:1;
+}
+.oee-val small{font-size:14px;color:var(--text2)}
+.oee-label{font-size:11px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.05em}
+
+/* METRIC CARDS */
+.metric-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.75rem;margin-bottom:1rem}
+.metric-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1rem;position:relative;overflow:hidden}
+.metric-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.metric-card.blue::before{background:var(--blue)}
+.metric-card.green::before{background:var(--green)}
+.metric-card.amber::before{background:var(--amber)}
+.metric-card.purple::before{background:var(--purple)}
+.metric-card.cyan::before{background:var(--cyan)}
+.metric-card.red::before{background:var(--red)}
+.metric-icon{font-size:18px;margin-bottom:6px}
+.metric-val{font-family:var(--font-display);font-size:28px;font-weight:700;color:var(--text);line-height:1;margin-bottom:2px}
+.metric-val.pct::after{content:'%';font-size:16px;color:var(--text2)}
+.metric-lbl{font-size:11px;color:var(--text3);font-weight:500}
+.metric-badge{display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:600;padding:2px 7px;border-radius:20px;margin-top:4px}
+.badge-excellent{background:rgba(16,185,129,.15);color:#6ee7b7}
+.badge-good{background:rgba(59,130,246,.15);color:#93c5fd}
+.badge-warning{background:rgba(245,158,11,.15);color:#fcd34d}
+.badge-critical{background:rgba(239,68,68,.15);color:#fca5a5}
+
+/* GRID LAYOUTS */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.75rem}
+.grid4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:.75rem}
+.grid12{display:grid;grid-template-columns:1fr 2fr;gap:1rem}
+.grid21{display:grid;grid-template-columns:2fr 1fr;gap:1rem}
+
+/* CHART WRAPPER */
+.chart-wrap{position:relative;height:220px}
+.chart-wrap.tall{height:280px}
+
+/* FORM ELEMENTS */
+.form-row{display:grid;gap:.75rem;margin-bottom:.75rem}
+.fr2{grid-template-columns:1fr 1fr}
+.fr3{grid-template-columns:1fr 1fr 1fr}
+.fr4{grid-template-columns:1fr 1fr 1fr 1fr}
+.fgrp{display:flex;flex-direction:column;gap:5px}
+.fgrp label{font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.04em}
+.fgrp input,.fgrp select,.fgrp textarea{
+  padding:8px 11px;background:var(--bg3);border:1px solid var(--border2);
+  border-radius:var(--radius);color:var(--text);font-size:13px;outline:none;transition:border .15s;width:100%;
+}
+.fgrp input:focus,.fgrp select:focus,.fgrp textarea:focus{border-color:var(--blue);box-shadow:0 0 0 2px var(--blue-glow)}
+.fgrp select option{background:var(--bg3)}
+
+/* BUTTONS */
+.btn{padding:8px 16px;border-radius:var(--radius);font-size:12.5px;font-weight:600;cursor:pointer;border:none;display:inline-flex;align-items:center;gap:6px;transition:all .15s;white-space:nowrap}
+.btn-blue{background:var(--blue);color:#fff}.btn-blue:hover{background:var(--blue2)}
+.btn-green{background:var(--green);color:#fff}.btn-green:hover{background:var(--green2)}
+.btn-amber{background:var(--amber);color:#111}.btn-amber:hover{background:var(--amber2)}
+.btn-red{background:var(--red);color:#fff}.btn-red:hover{background:var(--red2)}
+.btn-ghost{background:var(--bg3);border:1px solid var(--border2);color:var(--text2)}.btn-ghost:hover{border-color:var(--blue);color:var(--blue)}
+.btn-icon{padding:6px 10px}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+
+/* TABLE */
+.tbl-wrap{overflow-x:auto;max-height:380px;overflow-y:auto}
+table{width:100%;border-collapse:collapse;font-size:12px}
+thead th{position:sticky;top:0;z-index:1;background:var(--bg3);padding:8px 12px;text-align:left;color:var(--text3);font-weight:600;font-size:10px;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--border);white-space:nowrap}
+tbody td{padding:9px 12px;border-bottom:1px solid var(--border);color:var(--text2);vertical-align:middle}
+tbody tr:hover td{background:var(--bg3);color:var(--text)}
+tbody tr:last-child td{border-bottom:none}
+
+/* BADGES */
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;gap:3px}
+.badge-eng{background:rgba(59,130,246,.15);color:#93c5fd}
+.badge-pro{background:rgba(16,185,129,.15);color:#6ee7b7}
+.badge-qc{background:rgba(245,158,11,.15);color:#fcd34d}
+.badge-plan{background:rgba(107,114,128,.2);color:#9ca3af}
+.badge-co{background:rgba(139,92,246,.15);color:#c4b5fd}
+
+/* ALERT */
+.alert{padding:9px 13px;border-radius:var(--radius);font-size:12px;font-weight:500;border:1px solid transparent;margin-bottom:.75rem}
+.alert-success{background:rgba(16,185,129,.1);border-color:rgba(16,185,129,.3);color:#6ee7b7}
+.alert-danger{background:rgba(239,68,68,.1);border-color:rgba(239,68,68,.3);color:#fca5a5}
+.alert-info{background:rgba(59,130,246,.1);border-color:rgba(59,130,246,.3);color:#93c5fd}
+.hidden{display:none!important}
+
+/* SHIFT TABS */
+.shift-tabs{display:flex;gap:4px;margin-bottom:1rem}
+.shift-tab{padding:6px 16px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid var(--border2);color:var(--text2);background:var(--bg3);transition:all .15s}
+.shift-tab.active{background:var(--blue);border-color:var(--blue);color:#fff}
+
+/* PERIOD SELECTOR */
+.period-sel{display:flex;gap:4px;background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:3px}
+.period-btn{padding:4px 12px;border-radius:16px;font-size:11px;font-weight:600;cursor:pointer;border:none;color:var(--text2);background:transparent;transition:all .15s}
+.period-btn.active{background:var(--blue);color:#fff}
+
+/* PROGRESS BAR */
+.progress{background:var(--bg4);border-radius:10px;height:6px;overflow:hidden}
+.progress-fill{height:100%;border-radius:10px;transition:width 1s ease}
+
+/* LOSS ITEMS */
+.loss-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)}
+.loss-item:last-child{border-bottom:none}
+.loss-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.loss-name{flex:1;font-size:12px;color:var(--text2)}
+.loss-pct{font-family:var(--font-mono);font-size:12px;font-weight:600;color:var(--text);min-width:42px;text-align:right}
+.loss-bar{width:80px}
+
+/* EQUATION BOX */
+.eq-box{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1rem;margin-bottom:.75rem}
+.eq-formula{font-family:var(--font-mono);font-size:13px;color:var(--cyan);margin-bottom:6px;line-height:1.6}
+.eq-desc{font-size:11px;color:var(--text3);line-height:1.6}
+
+/* STATUS DOT */
+.status-dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+.dot-green{background:var(--green);box-shadow:0 0 6px var(--green)}
+.dot-amber{background:var(--amber);box-shadow:0 0 6px var(--amber)}
+.dot-red{background:var(--red);box-shadow:0 0 6px var(--red)}
+
+/* TIMER BUTTONS */
+.timer-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem}
+.timer-btn{padding:16px;border-radius:var(--radius-lg);font-family:var(--font-display);font-weight:700;cursor:pointer;border:2px solid;display:flex;flex-direction:column;align-items:center;gap:5px;transition:all .2s;text-align:center}
+.timer-btn .tl{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;opacity:.8}
+.timer-btn .tv{font-size:18px;font-weight:800;font-family:var(--font-mono);letter-spacing:.5px;min-height:24px}
+.timer-start-idle{background:rgba(239,68,68,.08);color:#fca5a5;border-color:rgba(239,68,68,.3)}
+.timer-start-idle:hover{background:rgba(239,68,68,.15);border-color:var(--red)}
+.timer-start-active{background:var(--red);color:#fff;border-color:var(--red);animation:redpulse 1.5s infinite}
+@keyframes redpulse{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.5)}70%{box-shadow:0 0 0 8px rgba(239,68,68,0)}}
+.timer-end-idle{background:var(--bg3);color:var(--text3);border-color:var(--border);cursor:not-allowed;opacity:.5}
+.timer-end-ready{background:rgba(16,185,129,.08);color:#6ee7b7;border-color:rgba(16,185,129,.4)}
+.timer-end-ready:hover{background:rgba(16,185,129,.18);border-color:var(--green)}
+.elapsed-strip{
+  display:none;align-items:center;gap:10px;padding:9px 14px;
+  background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.3);border-radius:var(--radius);margin-bottom:1rem;
+}
+.elapsed-pulse{width:9px;height:9px;border-radius:50%;background:var(--amber);animation:pulse 1s infinite;flex-shrink:0}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.3;transform:scale(.6)}}
+.elapsed-text{font-size:12px;font-weight:600;color:#fcd34d}
+.elapsed-val{font-family:var(--font-mono);font-size:15px;font-weight:700;color:#f59e0b;margin-left:4px}
+
+/* CODE BOX */
+.code-box{background:#0a0c11;border:1px solid var(--border);border-radius:var(--radius-lg);padding:1rem;position:relative;margin-top:8px}
+.code-box pre{font-family:var(--font-mono);font-size:11px;color:#7dd3fc;white-space:pre-wrap;line-height:1.8}
+.code-copy{position:absolute;top:8px;right:8px;background:var(--bg3);border:1px solid var(--border2);color:var(--text2);padding:4px 10px;border-radius:6px;font-size:11px;cursor:pointer}
+.code-copy:hover{border-color:var(--blue);color:var(--blue)}
+
+/* DEVICE LIST */
+.device-item{display:flex;align-items:center;gap:10px;padding:10px;background:var(--bg3);border-radius:var(--radius);border:1px solid var(--border);margin-bottom:6px}
+.device-icon{font-size:18px}
+.device-info{flex:1}
+.device-name{font-size:13px;font-weight:600;color:var(--text)}
+.device-meta{font-size:11px;color:var(--text3)}
+
+/* SECTION HEADER */
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem}
+.section-header .card-title{margin:0}
+
+/* RANGE SEVERITY */
+.severity-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem;margin-bottom:.75rem}
+.severity-card{padding:.75rem;border-radius:var(--radius);border:1px solid;text-align:center}
+.sev-excellent{background:rgba(16,185,129,.08);border-color:rgba(16,185,129,.3)}
+.sev-medium{background:rgba(245,158,11,.08);border-color:rgba(245,158,11,.3)}
+.sev-critical{background:rgba(239,68,68,.08);border-color:rgba(239,68,68,.3)}
+.sev-val{font-family:var(--font-display);font-size:20px;font-weight:700}
+.sev-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-top:2px}
+
+/* NOTIFICATION */
+.notif{position:fixed;bottom:1.5rem;right:1.5rem;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:.75rem 1rem;font-size:12px;font-weight:500;color:var(--text);box-shadow:var(--shadow);z-index:9999;transform:translateY(10px);opacity:0;transition:all .3s;max-width:300px;display:flex;align-items:center;gap:8px}
+.notif.show{transform:translateY(0);opacity:1}
+
+/* RESPONSIVE */
+@media(max-width:900px){
+  :root{--sidebar:0px}
+  .sidebar{display:none}
+  .metric-grid{grid-template-columns:repeat(2,1fr)}
+  .grid2,.grid12,.grid21{grid-template-columns:1fr}
+  .grid3{grid-template-columns:1fr 1fr}
+}
+@media(max-width:600px){
+  .grid3,.grid4,.metric-grid{grid-template-columns:1fr 1fr}
+  .fr3,.fr4{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- ══ LOGIN ══════════════════════════════════════════════════════ -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-brand">
+      <div class="login-logo">OEE</div>
+      <div class="login-title">OEE Management System</div>
+      <div class="login-sub">PolyCreation Industries — Bag Manufacturing</div>
+    </div>
+    <div style="margin-bottom:.75rem">
+      <label class="login-label">Login as</label>
+      <div class="login-role">
+        <div class="role-btn active" id="role-main" onclick="setRole('main')">🔑 Main</div>
+        <div class="role-btn" id="role-logger" onclick="setRole('logger')">📋 Logger</div>
+      </div>
+    </div>
+    <div class="login-err" id="login-err">Incorrect password. Try again.</div>
+    <label class="login-label">Password</label>
+    <input type="password" class="login-input" id="pw-input" placeholder="Enter password" onkeydown="if(event.key==='Enter')doLogin()">
+    <button class="btn-login" onclick="doLogin()">SIGN IN →</button>
+  </div>
+</div>
+
+<!-- ══ APP ════════════════════════════════════════════════════════ -->
+<div id="app" style="display:none;flex-direction:column">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-brand">
+      <div class="topbar-logo">OEE</div>
+      <div>
+        <div class="topbar-name">OEE SYSTEM</div>
+      </div>
+    </div>
+    <div class="topbar-clock" id="clock">--:--:--</div>
+    <div class="topbar-user" id="topbar-user">
+      <div class="topbar-avatar" id="user-avatar">M</div>
+      <span class="topbar-username" id="user-name">Main</span>
+      <span class="topbar-role-badge role-main" id="user-badge">MAIN</span>
+    </div>
+    <button class="topbar-btn" onclick="goTo('settings')">⚙</button>
+    <button class="topbar-btn" onclick="doLogout()">↩ Sign out</button>
+  </div>
+
+  <div class="app-body">
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <div class="nav-group">
+        <div class="nav-label">Overview</div>
+        <div class="nav-item active" id="nav-dashboard" onclick="goTo('dashboard')"><span class="nav-icon">📊</span> Dashboard</div>
+      </div>
+      <div class="nav-group">
+        <div class="nav-label">OEE Pillars</div>
+        <div class="nav-item" id="nav-availability" onclick="goTo('availability')"><span class="nav-icon">⏱</span> Availability</div>
+        <div class="nav-item" id="nav-performance" onclick="goTo('performance')"><span class="nav-icon">⚡</span> Performance</div>
+        <div class="nav-item" id="nav-quality" onclick="goTo('quality')"><span class="nav-icon">✅</span> Quality</div>
+      </div>
+      <div class="nav-group">
+        <div class="nav-label">Data</div>
+        <div class="nav-item" id="nav-input" onclick="goTo('input')"><span class="nav-icon">📝</span> Data Input</div>
+        <div class="nav-item" id="nav-downtime" onclick="goTo('downtime')"><span class="nav-icon">🔴</span> Downtime Log</div>
+        <div class="nav-item" id="nav-records" onclick="goTo('records')"><span class="nav-icon">📋</span> Records</div>
+      </div>
+      <div class="nav-group">
+        <div class="nav-label">Analysis</div>
+        <div class="nav-item" id="nav-calc" onclick="goTo('calc')"><span class="nav-icon">🧮</span> Calculations</div>
+        <div class="nav-item" id="nav-losses" onclick="goTo('losses')"><span class="nav-icon">📉</span> Loss Analysis</div>
+      </div>
+      <div class="nav-divider"></div>
+      <div class="nav-group">
+        <div class="nav-item" id="nav-settings" onclick="goTo('settings')"><span class="nav-icon">⚙</span> Settings</div>
+      </div>
+    </div>
+
+    <!-- CONTENT -->
+    <div class="content">
+
+      <!-- ══ DASHBOARD ══════════════════════════════════════════ -->
+      <div class="page active" id="page-dashboard">
+        <div class="page-title">Dashboard</div>
+        <div class="page-sub">Overall Equipment Effectiveness — PolyCreation Bag Manufacturing</div>
+
+        <!-- Overall OEE + Period Selector -->
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem">
+          <div style="font-size:12px;color:var(--text3);font-weight:600">SELECT PERIOD</div>
+          <div class="period-sel">
+            <button class="period-btn active" onclick="setPeriod('today',this)">Today</button>
+            <button class="period-btn" onclick="setPeriod('month',this)">Month</button>
+            <button class="period-btn" onclick="setPeriod('year',this)">Year</button>
+          </div>
+        </div>
+
+        <!-- OEE Overview Cards -->
+        <div class="metric-grid" style="grid-template-columns:repeat(4,1fr)">
+          <div class="metric-card blue" style="grid-column:span 1">
+            <div style="display:flex;align-items:flex-start;justify-content:space-between">
+              <div>
+                <div class="metric-lbl">Overall OEE</div>
+                <div class="metric-val pct" id="d-oee" style="font-size:36px">0</div>
+                <div class="metric-badge badge-good" id="d-oee-badge">Calculating...</div>
+              </div>
+              <div style="position:relative;width:70px;height:70px;flex-shrink:0">
+                <svg viewBox="0 0 70 70" width="70" height="70" style="transform:rotate(-90deg)">
+                  <circle cx="35" cy="35" r="28" fill="none" stroke="var(--border2)" stroke-width="8"/>
+                  <circle cx="35" cy="35" r="28" fill="none" stroke="var(--blue)" stroke-width="8" stroke-linecap="round"
+                    id="mini-ring-oee" stroke-dasharray="175.9" stroke-dashoffset="175.9"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+          <div class="metric-card green">
+            <div class="metric-icon">⏱</div>
+            <div class="metric-val pct" id="d-avail">0</div>
+            <div class="metric-lbl">Availability</div>
+            <div class="progress" style="margin-top:6px"><div class="progress-fill" id="d-avail-bar" style="background:var(--green);width:0%"></div></div>
+          </div>
+          <div class="metric-card amber">
+            <div class="metric-icon">⚡</div>
+            <div class="metric-val pct" id="d-perf">0</div>
+            <div class="metric-lbl">Performance</div>
+            <div class="progress" style="margin-top:6px"><div class="progress-fill" id="d-perf-bar" style="background:var(--amber);width:0%"></div></div>
+          </div>
+          <div class="metric-card purple">
+            <div class="metric-icon">✅</div>
+            <div class="metric-val pct" id="d-qual">0</div>
+            <div class="metric-lbl">Quality</div>
+            <div class="progress" style="margin-top:6px"><div class="progress-fill" id="d-qual-bar" style="background:var(--purple);width:0%"></div></div>
+          </div>
+        </div>
+
+        <!-- OEE Trend Chart + Loss Breakdown -->
+        <div class="grid21" style="grid-template-columns:2fr 1fr">
+          <div class="card blue">
+            <div class="section-header">
+              <div class="card-title">OEE Trend</div>
+              <div class="period-sel">
+                <button class="period-btn active" onclick="setChartPeriod('day',this)">Daily</button>
+                <button class="period-btn" onclick="setChartPeriod('month',this)">Monthly</button>
+                <button class="period-btn" onclick="setChartPeriod('year',this)">Yearly</button>
+              </div>
+            </div>
+            <div class="chart-wrap tall"><canvas id="chart-oee-trend"></canvas></div>
+          </div>
+          <div class="card red">
+            <div class="card-title">Loss Breakdown</div>
+            <div class="chart-wrap" style="height:160px"><canvas id="chart-loss-donut"></canvas></div>
+            <div id="loss-legend" style="margin-top:.5rem"></div>
+          </div>
+        </div>
+
+        <!-- Pillar Charts -->
+        <div class="grid3">
+          <div class="card green">
+            <div class="card-title">Availability History</div>
+            <div class="chart-wrap"><canvas id="chart-avail"></canvas></div>
+          </div>
+          <div class="card amber">
+            <div class="card-title">Performance History</div>
+            <div class="chart-wrap"><canvas id="chart-perf"></canvas></div>
+          </div>
+          <div class="card purple">
+            <div class="card-title">Quality History</div>
+            <div class="chart-wrap"><canvas id="chart-qual"></canvas></div>
+          </div>
+        </div>
+
+        <!-- Loss Severity -->
+        <div class="card">
+          <div class="card-title">OEE Severity Ranges</div>
+          <div class="severity-grid">
+            <div class="severity-card sev-excellent">
+              <div class="sev-val" style="color:var(--green)">≥ 85%</div>
+              <div class="sev-label" style="color:#6ee7b7">🟢 World Class</div>
+              <div style="font-size:11px;color:var(--text3);margin-top:4px">Excellent — industry benchmark</div>
+            </div>
+            <div class="severity-card sev-medium">
+              <div class="sev-val" style="color:var(--amber)">60–84%</div>
+              <div class="sev-label" style="color:#fcd34d">🟡 Needs Work</div>
+              <div style="font-size:11px;color:var(--text3);margin-top:4px">Medium — improvement needed</div>
+            </div>
+            <div class="severity-card sev-critical">
+              <div class="sev-val" style="color:var(--red)">< 60%</div>
+              <div class="sev-label" style="color:#fca5a5">🔴 Critical</div>
+              <div style="font-size:11px;color:var(--text3);margin-top:4px">Major losses — urgent action</div>
+            </div>
+          </div>
+          <div id="top-losses-list"></div>
+        </div>
+      </div>
+
+      <!-- ══ AVAILABILITY ════════════════════════════════════════ -->
+      <div class="page" id="page-availability">
+        <div class="page-title">Availability</div>
+        <div class="page-sub">Operating Time ÷ Planned Production Time</div>
+
+        <div class="metric-grid" style="grid-template-columns:repeat(3,1fr)">
+          <div class="metric-card green">
+            <div class="metric-lbl">Today Availability</div>
+            <div class="metric-val pct" id="av-today">0</div>
+            <div class="metric-badge badge-good" id="av-today-badge">—</div>
+          </div>
+          <div class="metric-card green">
+            <div class="metric-lbl">This Month</div>
+            <div class="metric-val pct" id="av-month">0</div>
+          </div>
+          <div class="metric-card green">
+            <div class="metric-lbl">This Year</div>
+            <div class="metric-val pct" id="av-year">0</div>
+          </div>
+        </div>
+
+        <div class="grid21">
+          <div class="card green">
+            <div class="card-title">Availability Trend</div>
+            <div class="chart-wrap tall"><canvas id="chart-av-trend"></canvas></div>
+          </div>
+          <div class="card">
+            <div class="card-title">Downtime by Department</div>
+            <div class="chart-wrap"><canvas id="chart-av-dept"></canvas></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Shift Configuration</div>
+          <div class="form-row fr2">
+            <div class="fgrp">
+              <label>Day Shift Duration (hours)</label>
+              <input type="number" id="cfg-day-shift" value="12" min="1" max="24" step="0.5">
+            </div>
+            <div class="fgrp">
+              <label>Night Shift Duration (hours)</label>
+              <input type="number" id="cfg-night-shift" value="12" min="1" max="24" step="0.5">
+            </div>
+          </div>
+          <div class="form-row fr2">
+            <div class="fgrp">
+              <label>Planned Breaks — Day Shift (min)</label>
+              <input type="number" id="cfg-day-breaks" value="140" min="0">
+            </div>
+            <div class="fgrp">
+              <label>Planned Breaks — Night Shift (min)</label>
+              <input type="number" id="cfg-night-breaks" value="140" min="0">
+            </div>
+          </div>
+          <div class="form-row fr2">
+            <div class="fgrp">
+              <label>Ideal Cycle Time (bags/min)</label>
+              <input type="number" id="cfg-cycle-time" value="125" min="1">
+            </div>
+            <div class="fgrp">
+              <label>Default Active Shifts</label>
+              <select id="cfg-shifts">
+                <option value="both">Both (Day + Night)</option>
+                <option value="day">Day only</option>
+                <option value="night">Night only</option>
+              </select>
+            </div>
+          </div>
+          <button class="btn btn-green" onclick="saveShiftConfig()">💾 Save Configuration</button>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Planned Downtime Schedule</div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th>Reason</th><th>Department</th><th>Day Shift (min)</th><th>Night Shift (min)</th><th>Loss Type</th></tr></thead>
+              <tbody id="planned-dt-table"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ PERFORMANCE ════════════════════════════════════════ -->
+      <div class="page" id="page-performance">
+        <div class="page-title">Performance</div>
+        <div class="page-sub">Actual Output ÷ Planned Output (Ideal Cycle Time × Run Time)</div>
+
+        <div class="metric-grid" style="grid-template-columns:repeat(3,1fr)">
+          <div class="metric-card amber"><div class="metric-lbl">Today Performance</div><div class="metric-val pct" id="pf-today">0</div></div>
+          <div class="metric-card amber"><div class="metric-lbl">This Month</div><div class="metric-val pct" id="pf-month">0</div></div>
+          <div class="metric-card amber"><div class="metric-lbl">This Year</div><div class="metric-val pct" id="pf-year">0</div></div>
+        </div>
+
+        <div class="grid21">
+          <div class="card amber">
+            <div class="card-title">Performance Trend</div>
+            <div class="chart-wrap tall"><canvas id="chart-pf-trend"></canvas></div>
+          </div>
+          <div class="card">
+            <div class="card-title">Speed Loss Analysis</div>
+            <div id="speed-loss-info" style="padding:.5rem 0">
+              <div style="font-size:12px;color:var(--text3);margin-bottom:.5rem">Based on latest entry:</div>
+              <div class="eq-box">
+                <div class="eq-formula">Performance = Actual Output / Plan Output</div>
+                <div class="eq-formula">Plan Output = Ideal Rate × Run Time</div>
+                <div class="eq-desc" id="pf-calc-detail">Enter data to see calculation</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ QUALITY ════════════════════════════════════════════ -->
+      <div class="page" id="page-quality">
+        <div class="page-title">Quality</div>
+        <div class="page-sub">Good Pieces ÷ Total Pieces Produced</div>
+
+        <div class="metric-grid" style="grid-template-columns:repeat(3,1fr)">
+          <div class="metric-card purple"><div class="metric-lbl">Today Quality</div><div class="metric-val pct" id="ql-today">0</div></div>
+          <div class="metric-card purple"><div class="metric-lbl">This Month</div><div class="metric-val pct" id="ql-month">0</div></div>
+          <div class="metric-card purple"><div class="metric-lbl">This Year</div><div class="metric-val pct" id="ql-year">0</div></div>
+        </div>
+
+        <div class="grid2">
+          <div class="card purple">
+            <div class="card-title">Quality Trend</div>
+            <div class="chart-wrap tall"><canvas id="chart-ql-trend"></canvas></div>
+          </div>
+          <div class="card">
+            <div class="card-title">Rejection Analysis</div>
+            <div class="chart-wrap" style="height:180px"><canvas id="chart-ql-rej"></canvas></div>
+            <div id="ql-stats" style="margin-top:.75rem"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ DATA INPUT ══════════════════════════════════════════ -->
+      <div class="page" id="page-input">
+        <div class="page-title">Data Input</div>
+        <div class="page-sub">Enter daily production data per shift</div>
+
+        <div id="input-alert" class="alert hidden"></div>
+
+        <div class="card blue">
+          <div class="card-title">Production Details</div>
+          <div class="form-row fr4">
+            <div class="fgrp">
+              <label>Date</label>
+              <input type="date" id="in-date">
+            </div>
+            <div class="fgrp">
+              <label>Machine / Line</label>
+              <select id="in-machine">
+                <option value="">— select —</option>
+              </select>
+            </div>
+            <div class="fgrp">
+              <label>Shift</label>
+              <select id="in-shift">
+                <option value="day">Day Shift</option>
+                <option value="night">Night Shift</option>
+              </select>
+            </div>
+            <div class="fgrp">
+              <label>Product Code</label>
+              <select id="in-product">
+                <option value="">— select —</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid3">
+          <div class="card green">
+            <div class="card-title">⏱ Availability Data</div>
+            <div class="form-row">
+              <div class="fgrp">
+                <label>Planned Production Time (min)</label>
+                <input type="number" id="in-ppt" placeholder="Auto from shift config" readonly style="opacity:.7">
+              </div>
+              <div class="fgrp">
+                <label>Planned Downtime (min)</label>
+                <input type="number" id="in-planned-dt" placeholder="0" min="0">
+              </div>
+              <div class="fgrp">
+                <label>Actual Run Time (min)</label>
+                <input type="number" id="in-run-time" placeholder="e.g. 580" min="0">
+              </div>
+              <div class="fgrp">
+                <label>Total Downtime (min)</label>
+                <input type="number" id="in-downtime" placeholder="e.g. 140" min="0">
+              </div>
+            </div>
+          </div>
+
+          <div class="card amber">
+            <div class="card-title">⚡ Performance Data</div>
+            <div class="form-row">
+              <div class="fgrp">
+                <label>Ideal Cycle Time (bags/min)</label>
+                <input type="number" id="in-ideal-rate" placeholder="125" min="1">
+              </div>
+              <div class="fgrp">
+                <label>Total Count (bags produced)</label>
+                <input type="number" id="in-total-count" placeholder="e.g. 65000" min="0">
+              </div>
+              <div class="fgrp">
+                <label>Planned Production (bags)</label>
+                <input type="number" id="in-planned-prod" placeholder="e.g. 75000" min="0">
+              </div>
+            </div>
+          </div>
+
+          <div class="card purple">
+            <div class="card-title">✅ Quality Data</div>
+            <div class="form-row">
+              <div class="fgrp">
+                <label>Good Pieces (bags)</label>
+                <input type="number" id="in-good-pcs" placeholder="e.g. 64000" min="0">
+              </div>
+              <div class="fgrp">
+                <label>Bad / Rejected Pieces</label>
+                <input type="number" id="in-bad-pcs" placeholder="e.g. 1000" min="0">
+              </div>
+              <div class="fgrp">
+                <label>Quality Rejected (bags)</label>
+                <input type="number" id="in-quality-rej" placeholder="e.g. 500" min="0">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Live OEE Preview -->
+        <div class="card" id="live-oee-preview" style="background:rgba(59,130,246,.05);border-color:rgba(59,130,246,.3)">
+          <div class="card-title">Live OEE Preview</div>
+          <div class="grid4">
+            <div style="text-align:center">
+              <div style="font-size:11px;color:var(--text3);margin-bottom:4px">Availability</div>
+              <div style="font-family:var(--font-display);font-size:28px;font-weight:700;color:var(--green)" id="prev-avail">—</div>
+            </div>
+            <div style="text-align:center">
+              <div style="font-size:11px;color:var(--text3);margin-bottom:4px">Performance</div>
+              <div style="font-family:var(--font-display);font-size:28px;font-weight:700;color:var(--amber)" id="prev-perf">—</div>
+            </div>
+            <div style="text-align:center">
+              <div style="font-size:11px;color:var(--text3);margin-bottom:4px">Quality</div>
+              <div style="font-family:var(--font-display);font-size:28px;font-weight:700;color:var(--purple)" id="prev-qual">—</div>
+            </div>
+            <div style="text-align:center">
+              <div style="font-size:11px;color:var(--text3);margin-bottom:4px">OEE</div>
+              <div style="font-family:var(--font-display);font-size:28px;font-weight:700;color:var(--blue)" id="prev-oee">—</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn btn-blue" onclick="saveInputEntry()">💾 Save Entry</button>
+          <button class="btn btn-ghost" onclick="clearInputForm()">✕ Clear</button>
+        </div>
+      </div>
+
+      <!-- ══ DOWNTIME LOG ════════════════════════════════════════ -->
+      <div class="page" id="page-downtime">
+        <div class="page-title">Downtime Log</div>
+        <div class="page-sub">Record machine stoppage events in real time</div>
+
+        <div id="dt-alert" class="alert hidden"></div>
+
+        <div class="card blue">
+          <div class="card-title">Machine & Shift</div>
+          <div class="form-row fr3">
+            <div class="fgrp">
+              <label>Machine</label>
+              <select id="dt-machine"><option value="">— select —</option></select>
+            </div>
+            <div class="fgrp">
+              <label>Shift</label>
+              <select id="dt-shift">
+                <option value="day">Day Shift</option>
+                <option value="night">Night Shift</option>
+              </select>
+            </div>
+            <div class="fgrp">
+              <label>Date</label>
+              <input type="date" id="dt-date">
+            </div>
+          </div>
+        </div>
+
+        <div class="card red">
+          <div class="card-title">Downtime Timer</div>
+          <div class="timer-row">
+            <button class="timer-btn timer-start-idle" id="dt-btn-start" onclick="dtPressStart()">
+              <span class="tl">▶ Downtime START</span>
+              <span class="tv" id="dt-start-disp">Press to begin</span>
+            </button>
+            <button class="timer-btn timer-end-idle" id="dt-btn-end" onclick="dtPressEnd()" disabled>
+              <span class="tl">⏹ Downtime END</span>
+              <span class="tv" id="dt-end-disp">Waiting...</span>
+            </button>
+          </div>
+          <div class="elapsed-strip" id="dt-elapsed">
+            <div class="elapsed-pulse"></div>
+            <span class="elapsed-text">Machine down for</span>
+            <span class="elapsed-val" id="dt-elapsed-val">00:00</span>
+          </div>
+          <div class="form-row fr2">
+            <div class="fgrp">
+              <label>Reason</label>
+              <select id="dt-reason"><option value="">— select reason —</option></select>
+            </div>
+            <div class="fgrp">
+              <label>Remarks</label>
+              <input type="text" id="dt-remarks" placeholder="Optional notes...">
+            </div>
+          </div>
+          <div class="btn-row" style="margin-top:4px">
+            <button class="btn btn-green" onclick="dtSave()">✓ Save Downtime</button>
+            <span id="dt-dur-badge" style="font-size:12px;color:var(--amber);font-family:var(--font-mono);font-weight:700"></span>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="section-header">
+            <div class="card-title">Today's Downtime Log</div>
+            <div class="btn-row">
+              <button class="btn btn-ghost btn-icon" onclick="exportDowntimeCSV()">⬇ Export CSV</button>
+            </div>
+          </div>
+          <div class="tbl-wrap" id="dt-today-table">
+            <div style="text-align:center;padding:2rem;color:var(--text3)">No downtime entries today.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ RECORDS ════════════════════════════════════════════ -->
+      <div class="page" id="page-records">
+        <div class="page-title">Records</div>
+        <div class="page-sub">All production data entries — edit or delete</div>
+
+        <div class="card">
+          <div class="section-header">
+            <div class="card-title">Production Records</div>
+            <div class="btn-row">
+              <button class="btn btn-ghost btn-icon" onclick="exportAllCSV()">⬇ Export CSV</button>
+              <button class="btn btn-ghost btn-icon" onclick="exportBackupJSON()">💾 Backup JSON</button>
+            </div>
+          </div>
+          <div class="form-row fr3" style="margin-bottom:.75rem">
+            <div class="fgrp">
+              <label>Filter Machine</label>
+              <select id="rec-filter-machine" onchange="renderRecords()"><option value="">All machines</option></select>
+            </div>
+            <div class="fgrp">
+              <label>Filter Shift</label>
+              <select id="rec-filter-shift" onchange="renderRecords()">
+                <option value="">All shifts</option>
+                <option value="day">Day</option>
+                <option value="night">Night</option>
+              </select>
+            </div>
+            <div class="fgrp">
+              <label>Filter Month</label>
+              <input type="month" id="rec-filter-month" onchange="renderRecords()">
+            </div>
+          </div>
+          <div class="tbl-wrap" id="records-table"></div>
+        </div>
+      </div>
+
+      <!-- ══ CALCULATIONS ════════════════════════════════════════ -->
+      <div class="page" id="page-calc">
+        <div class="page-title">OEE Calculations</div>
+        <div class="page-sub">Formulas and live calculations used in this system</div>
+
+        <div class="grid2">
+          <div>
+            <div class="card blue">
+              <div class="card-title">OEE Formula</div>
+              <div class="eq-box">
+                <div class="eq-formula">OEE = Availability × Performance × Quality</div>
+                <div class="eq-desc">The three pillars multiplied together give Overall Equipment Effectiveness.</div>
+              </div>
+              <div class="eq-box">
+                <div class="eq-formula">Availability = Operating Time / Planned Production Time</div>
+                <div class="eq-desc">Operating Time = PPT − Downtime (unplanned). PPT = Shift Length − Planned Breaks.</div>
+              </div>
+              <div class="eq-box">
+                <div class="eq-formula">Performance = Total Count / (Ideal Rate × Operating Time)</div>
+                <div class="eq-desc">Ideal Rate in bags/min × Operating Time in minutes = theoretical max output.</div>
+              </div>
+              <div class="eq-box">
+                <div class="eq-formula">Quality = Good Pieces / Total Count</div>
+                <div class="eq-desc">Good Pieces = Total Count − Rejected / Defective pieces.</div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div class="card amber">
+              <div class="card-title">Planned Production Time</div>
+              <div class="eq-box">
+                <div class="eq-formula">PPT = Shift Length − Planned Breaks</div>
+                <div class="eq-desc" id="calc-ppt-detail">Loading config...</div>
+              </div>
+              <div class="card-title" style="margin-top:.75rem">Loss Calculations</div>
+              <div class="eq-box">
+                <div class="eq-formula">Availability Loss = 1 − Availability</div>
+                <div class="eq-formula">Performance Loss = Availability × (1 − Performance)</div>
+                <div class="eq-formula">Quality Loss = Availability × Performance × (1 − Quality)</div>
+                <div class="eq-formula">Total Loss = 1 − OEE</div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-title">Live Calculation — Latest Entry</div>
+              <div id="calc-live-detail" style="font-size:12px;color:var(--text2);line-height:1.8">No data yet. Add entries in Data Input.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ LOSS ANALYSIS ══════════════════════════════════════ -->
+      <div class="page" id="page-losses">
+        <div class="page-title">Loss Analysis</div>
+        <div class="page-sub">Finalized OEE losses and downtime reason breakdown</div>
+
+        <div class="grid2">
+          <div class="card red">
+            <div class="card-title">Loss by Category</div>
+            <div class="chart-wrap"><canvas id="chart-loss-cat"></canvas></div>
+          </div>
+          <div class="card">
+            <div class="card-title">Top 10 Downtime Reasons</div>
+            <div id="loss-reasons-list"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="section-header">
+            <div class="card-title">All OEE Loss Reasons (<span id="loss-reason-count">0</span>)</div>
+            <button class="btn btn-ghost btn-icon" onclick="openAddReason()">+ Add Reason</button>
+          </div>
+          <div id="loss-add-form" class="hidden" style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:1rem;margin-bottom:.75rem">
+            <div class="form-row fr4">
+              <div class="fgrp"><label>Reason Name</label><input type="text" id="lr-name" placeholder="Reason..."></div>
+              <div class="fgrp"><label>Department</label>
+                <select id="lr-dept">
+                  <option value="QC">Quality</option>
+                  <option value="PRO">Production</option>
+                  <option value="ENG">Engineering</option>
+                </select>
+              </div>
+              <div class="fgrp"><label>Loss Type</label>
+                <select id="lr-type">
+                  <option value="Availability Loss">Availability Loss</option>
+                  <option value="Planned">Planned</option>
+                  <option value="Changeover loss">Changeover loss</option>
+                </select>
+              </div>
+              <div class="fgrp" style="justify-content:flex-end">
+                <label>&nbsp;</label>
+                <div class="btn-row">
+                  <button class="btn btn-blue" onclick="saveLossReason()">Add</button>
+                  <button class="btn btn-ghost" onclick="document.getElementById('loss-add-form').classList.add('hidden')">Cancel</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="tbl-wrap" id="loss-reasons-table"></div>
+        </div>
+      </div>
+
+      <!-- ══ SETTINGS ════════════════════════════════════════════ -->
+      <div class="page" id="page-settings">
+        <div class="page-title">Settings</div>
+        <div class="page-sub">System configuration, users, devices, and data management</div>
+
+        <div class="grid2">
+          <div class="card purple">
+            <div class="card-title">User Management</div>
+            <div id="settings-pw-alert" class="alert hidden"></div>
+            <div style="margin-bottom:.75rem;padding:.75rem;background:var(--bg3);border-radius:var(--radius);border:1px solid var(--border)">
+              <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:.5rem">Main User</div>
+              <div class="form-row fr2" style="margin:0">
+                <div class="fgrp"><label>Username</label><input type="text" id="cfg-main-name" placeholder="Main username"></div>
+                <div class="fgrp"><label>New Password</label><input type="password" id="cfg-main-pw" placeholder="New password"></div>
+              </div>
+            </div>
+            <div style="margin-bottom:.75rem;padding:.75rem;background:var(--bg3);border-radius:var(--radius);border:1px solid var(--border)">
+              <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:.5rem">Logger User</div>
+              <div class="form-row fr2" style="margin:0">
+                <div class="fgrp"><label>Username</label><input type="text" id="cfg-logger-name" placeholder="Logger username"></div>
+                <div class="fgrp"><label>New Password</label><input type="password" id="cfg-logger-pw" placeholder="New password"></div>
+              </div>
+            </div>
+            <button class="btn btn-ghost" id="cfg-cur-pw-toggle" onclick="toggleCurPw()">🔐 Verify with current password to save</button>
+            <div id="cfg-cur-pw-wrap" class="hidden" style="margin-top:.5rem">
+              <div class="fgrp"><label>Current Password (Main)</label><input type="password" id="cfg-cur-pw"></div>
+              <button class="btn btn-blue" style="margin-top:.5rem" onclick="saveUserSettings()">Save User Settings</button>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">Product Codes & Machines</div>
+            <div style="margin-bottom:.75rem">
+              <div style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:6px;text-transform:uppercase">Machines / Lines</div>
+              <div id="machine-list"></div>
+              <div class="form-row fr2" style="margin-top:6px;margin-bottom:0">
+                <div class="fgrp"><input type="text" id="new-machine" placeholder="Machine name e.g. GZR 700 Line 1"></div>
+                <div><button class="btn btn-blue" onclick="addMachine()">+ Add</button></div>
+              </div>
+            </div>
+            <div>
+              <div style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:6px;text-transform:uppercase">Product Codes</div>
+              <div id="product-list"></div>
+              <div class="form-row fr3" style="margin-top:6px;margin-bottom:0">
+                <div class="fgrp"><input type="text" id="new-product-code" placeholder="Code e.g. P001"></div>
+                <div class="fgrp"><input type="text" id="new-product-name" placeholder="Product name"></div>
+                <div><button class="btn btn-blue" onclick="addProduct()">+ Add</button></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid2">
+          <div class="card blue">
+            <div class="card-title">Google Sheets Sync</div>
+            <div class="fgrp" style="margin-bottom:.75rem">
+              <label>Apps Script Web App URL</label>
+              <input type="text" id="gs-url-input" placeholder="https://script.google.com/macros/s/.../exec">
+            </div>
+            <div class="btn-row" style="margin-bottom:.75rem">
+              <button class="btn btn-blue" onclick="saveGsUrl()">💾 Save URL</button>
+              <button class="btn btn-ghost" onclick="testGsUrl()">🔌 Test</button>
+            </div>
+            <div id="gs-status" style="display:none" class="alert alert-info"></div>
+            <div class="card-title" style="margin-top:.5rem">Apps Script Code</div>
+            <div class="code-box">
+              <button class="code-copy" onclick="copyGsCode()">📋 Copy</button>
+              <pre id="gs-code">function doPost(e) {
+  var ss = SpreadsheetApp.openById('1P5D2ctgAMayn-0UAzD2TcLCR5Z9xweVCyXaDR2ikfo4');
+  var data = JSON.parse(e.postData.contents);
+  var sheet = ss.getSheetByName(data.sheet) || ss.getSheets()[0];
+  if(sheet.getLastRow()===0) sheet.appendRow(data.headers);
+  sheet.appendRow(data.row);
+  return ContentService.createTextOutput(JSON.stringify({status:'ok'}))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+function doGet(e) {
+  return ContentService.createTextOutput(JSON.stringify({status:'ok'}))
+    .setMimeType(ContentService.MimeType.JSON);
+}</pre>
+            </div>
+            <div style="font-size:11px;color:var(--text3);margin-top:8px;line-height:1.7">
+              <strong style="color:var(--blue)">Step 1:</strong> Open Google Apps Script → paste code above<br>
+              <strong style="color:var(--blue)">Step 2:</strong> Deploy → New Deployment → Web App → Anyone → Deploy<br>
+              <strong style="color:var(--blue)">Step 3:</strong> Copy Web App URL → paste above → Save
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">Devices (sessions)</div>
+            <div id="device-list">
+              <div style="font-size:12px;color:var(--text3);padding:.5rem 0">No devices tracked. Data stored in browser localStorage.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid2">
+          <div class="card">
+            <div class="card-title">Backup & Export</div>
+            <div class="btn-row">
+              <button class="btn btn-green" onclick="exportAllCSV()">⬇ Export All CSV</button>
+              <button class="btn btn-ghost" onclick="exportBackupJSON()">💾 Full Backup JSON</button>
+            </div>
+            <div style="font-size:11px;color:var(--text3);margin-top:.5rem">CSV opens directly in Excel. JSON backup can be imported later.</div>
+          </div>
+
+          <div class="card" style="border-color:rgba(239,68,68,.3)">
+            <div class="card-title" style="color:#fca5a5">Danger Zone</div>
+            <div style="font-size:12px;color:var(--text3);margin-bottom:.75rem">Reset all system data. Requires Main username and password confirmation.</div>
+            <div class="form-row fr2" style="margin-bottom:.5rem">
+              <div class="fgrp"><label>Main Username</label><input type="text" id="reset-username" placeholder="Main username"></div>
+              <div class="fgrp"><label>Main Password</label><input type="password" id="reset-password" placeholder="Main password"></div>
+            </div>
+            <button class="btn btn-red" onclick="resetAllData()">⚠ Reset All Data</button>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /app-body -->
+</div><!-- /app -->
+
+<!-- NOTIFICATION -->
+<div class="notif" id="notif"></div>
+
+<script>
+/* ══════════════════════════════════════════════════════════════
+   DATA STORE
+══════════════════════════════════════════════════════════════ */
+const K = {
+  users:'oee_users', machines:'oee_machines', products:'oee_products',
+  shiftCfg:'oee_shift_cfg', inputEntries:'oee_input', dtEntries:'oee_dt',
+  reasons:'oee_reasons', gsurl:'oee_gsurl'
+};
+
+const DEFAULT_USERS = {
+  main:{name:'Main',password:'12345678',role:'main'},
+  logger:{name:'Logger',password:'12345678',role:'logger'}
+};
+
+const DEFAULT_MACHINES = ['GZR 700 — Line 1','GZR 700 — Line 2','GFQ 700 — Line 3','Pilot Machine'];
+const DEFAULT_PRODUCTS = [
+  {code:'P001',name:'Plain Bag 30cm'},
+  {code:'P002',name:'Printed Bag 30cm'},
+  {code:'P003',name:'T-Shirt Bag'},
+];
+
+const DEFAULT_SHIFT = {dayDur:12,nightDur:12,dayBreaks:140,nightBreaks:140,cycleTime:125,shifts:'both'};
+
+const DEFAULT_REASONS = [
+  {id:1,name:'Quality issues',dept:'QC',type:'Availability Loss'},
+  {id:2,name:'QC approval pending',dept:'QC',type:'Availability Loss'},
+  {id:3,name:'Other QC issues',dept:'QC',type:'Availability Loss'},
+  {id:4,name:'No operators',dept:'PRO',type:'Availability Loss'},
+  {id:5,name:'Waiting materials',dept:'PRO',type:'Availability Loss'},
+  {id:6,name:'Pending approvals',dept:'PRO',type:'Availability Loss'},
+  {id:7,name:'Waiting for operator',dept:'PRO',type:'Availability Loss'},
+  {id:8,name:'Other production issues',dept:'PRO',type:'Availability Loss'},
+  {id:9,name:'Waiting for maintenance',dept:'ENG',type:'Availability Loss'},
+  {id:10,name:'Not cutting properly',dept:'ENG',type:'Availability Loss'},
+  {id:11,name:'Not sealing properly',dept:'ENG',type:'Availability Loss'},
+  {id:12,name:'Damaged solenoid valve',dept:'ENG',type:'Availability Loss'},
+  {id:13,name:'Damaged air lines',dept:'ENG',type:'Availability Loss'},
+  {id:14,name:'Damaged pneumatic cylinder',dept:'ENG',type:'Availability Loss'},
+  {id:15,name:'Damaged springs',dept:'ENG',type:'Availability Loss'},
+  {id:16,name:'Damaged teflon',dept:'ENG',type:'Availability Loss'},
+  {id:17,name:'Damaged conveyor belts',dept:'ENG',type:'Availability Loss'},
+  {id:18,name:'Damaged bearings',dept:'ENG',type:'Availability Loss'},
+  {id:19,name:'Damaged sealing bar holder',dept:'ENG',type:'Availability Loss'},
+  {id:20,name:'Photocell not working',dept:'ENG',type:'Availability Loss'},
+  {id:21,name:'Damaged magnetic contactor',dept:'ENG',type:'Availability Loss'},
+  {id:22,name:'Worn out carbon brush',dept:'ENG',type:'Availability Loss'},
+  {id:23,name:'Thermocouple not working',dept:'ENG',type:'Availability Loss'},
+  {id:24,name:'Damaged heating element',dept:'ENG',type:'Availability Loss'},
+  {id:25,name:'Thermocontroller damaged',dept:'ENG',type:'Availability Loss'},
+  {id:26,name:'Other engineering issues',dept:'ENG',type:'Availability Loss'},
+  {id:27,name:'Breakfast',dept:'PRO',type:'Planned'},
+  {id:28,name:'Lunch',dept:'PRO',type:'Planned'},
+  {id:29,name:'Dinner',dept:'PRO',type:'Planned'},
+  {id:30,name:'Tea break',dept:'PRO',type:'Planned'},
+  {id:31,name:'Meetings',dept:'PRO',type:'Planned'},
+  {id:32,name:'Sanitation or refresh',dept:'PRO',type:'Planned'},
+  {id:33,name:'Machine cleaning',dept:'PRO',type:'Planned'},
+  {id:34,name:'Planned breakdown',dept:'ENG',type:'Planned'},
+  {id:35,name:'PM or AM',dept:'ENG',type:'Planned'},
+  {id:36,name:'Roll change',dept:'PRO',type:'Changeover loss'},
+  {id:37,name:'Product change',dept:'PRO',type:'Changeover loss'},
+  {id:38,name:'Tape change',dept:'PRO',type:'Changeover loss'},
+  {id:39,name:'Puncher change',dept:'ENG',type:'Changeover loss'},
+  {id:40,name:'Sensor change',dept:'ENG',type:'Changeover loss'},
+  {id:41,name:'Teflon change',dept:'ENG',type:'Changeover loss'},
+  {id:42,name:'Unplanned stoppage',dept:'PRO',type:'Availability Loss'}
+];
+
+function ld(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}}
+function sv(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+function getProp(k,d){return localStorage.getItem(k)||d}
+
+let users = ld(K.users, DEFAULT_USERS);
+let machines = ld(K.machines, DEFAULT_MACHINES);
+let products = ld(K.products, DEFAULT_PRODUCTS);
+let shiftCfg = ld(K.shiftCfg, DEFAULT_SHIFT);
+let inputEntries = ld(K.inputEntries, []);
+let dtEntries = ld(K.dtEntries, []);
+let reasons = ld(K.reasons, DEFAULT_REASONS);
+let gsUrl = getProp(K.gsurl, '');
+
+let currentRole = 'main';
+let currentUser = '';
+
+/* ══ AUTH ═══════════════════════════════════════════════════════ */
+let selectedRole = 'main';
+function setRole(r){
+  selectedRole = r;
+  document.getElementById('role-main').classList.toggle('active', r==='main');
+  document.getElementById('role-logger').classList.toggle('active', r==='logger');
+}
+
+function doLogin(){
+  const pw = document.getElementById('pw-input').value;
+  const u = users[selectedRole];
+  if(!u || pw !== u.password){
+    document.getElementById('login-err').style.display='block';
+    document.getElementById('pw-input').value='';
+    return;
+  }
+  document.getElementById('login-err').style.display='none';
+  currentRole = selectedRole;
+  currentUser = u.name;
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('app').style.display='flex';
+  document.getElementById('user-name').textContent = u.name;
+  document.getElementById('user-avatar').textContent = u.name[0].toUpperCase();
+  document.getElementById('user-badge').textContent = currentRole.toUpperCase();
+  document.getElementById('user-badge').className = 'topbar-role-badge ' + (currentRole==='main'?'role-main':'role-logger');
+  if(currentRole==='logger'){
+    document.getElementById('nav-settings').style.opacity='.4';
+    document.getElementById('nav-settings').style.pointerEvents='none';
+    document.getElementById('nav-calc').style.opacity='.4';
+  }
+  initApp();
+}
+document.getElementById('pw-input').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin()});
+
+function doLogout(){
+  document.getElementById('app').style.display='none';
+  document.getElementById('login-screen').style.display='flex';
+  document.getElementById('pw-input').value='';
+}
+
+/* ══ CLOCK ══════════════════════════════════════════════════════ */
+function tick(){
+  const n=new Date();
+  document.getElementById('clock').textContent=
+    n.toLocaleTimeString('en-GB')+' · '+n.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
+}
+setInterval(tick,1000);tick();
+
+/* ══ NAVIGATION ═════════════════════════════════════════════════ */
+function goTo(page){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active');
+  const ni=document.getElementById('nav-'+page);
+  if(ni)ni.classList.add('active');
+  if(page==='dashboard')refreshDashboard();
+  if(page==='records'){renderRecords();updateRecordFilters();}
+  if(page==='losses')renderLossPage();
+  if(page==='settings')renderSettings();
+  if(page==='availability')renderAvailability();
+  if(page==='performance')renderPerformance();
+  if(page==='quality')renderQuality();
+  if(page==='calc')renderCalc();
+  if(page==='downtime')renderDtToday();
+}
+
+/* ══ NOTIFY ═════════════════════════════════════════════════════ */
+function notify(msg,type='success'){
+  const el=document.getElementById('notif');
+  el.innerHTML=(type==='success'?'<span style="color:var(--green)">✓</span>':type==='error'?'<span style="color:var(--red)">✗</span>':'<span style="color:var(--blue)">ℹ</span>')+' '+msg;
+  el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'),3500);
+}
+
+/* ══ OEE CALCULATION ════════════════════════════════════════════ */
+function calcOEE(entry){
+  const cfg = shiftCfg;
+  const dur = entry.shift==='day'?cfg.dayDur:cfg.nightDur;
+  const breaks = entry.shift==='day'?cfg.dayBreaks:cfg.nightBreaks;
+  const shiftMins = dur * 60;
+  const ppt = shiftMins - breaks;
+  const operatingTime = entry.runTime || (ppt - (entry.downtime||0));
+  const idealRate = entry.idealRate || cfg.cycleTime;
+  const planOutput = idealRate * operatingTime;
+  const avail = ppt > 0 ? Math.min(operatingTime / ppt, 1) : 0;
+  const perf = planOutput > 0 ? Math.min((entry.totalCount||0) / planOutput, 1) : 0;
+  const qual = (entry.totalCount||0) > 0 ? Math.min((entry.goodPcs||0) / (entry.totalCount||0), 1) : 0;
+  const oee = avail * perf * qual;
+  return {avail, perf, qual, oee, ppt, operatingTime, planOutput, shiftMins};
+}
+
+function pct(v){return (v*100).toFixed(1)+'%'}
+function pctN(v){return parseFloat((v*100).toFixed(1))}
+function oeeColor(v){if(v>=.85)return'var(--green)';if(v>=.60)return'var(--amber)';return'var(--red)'}
+function oeeBadge(v){if(v>=.85)return{cls:'badge-excellent',txt:'🟢 World Class'};if(v>=.60)return{cls:'badge-warning',txt:'🟡 Needs Work'};return{cls:'badge-critical',txt:'🔴 Critical'}}
+
+function getEntriesForPeriod(period){
+  const now=new Date();
+  const today=now.toLocaleDateString('en-GB');
+  const thisMonth=now.getMonth();
+  const thisYear=now.getFullYear();
+  return inputEntries.filter(e=>{
+    if(period==='today') return e.date===today;
+    if(period==='month'){const d=parseDate(e.date);return d&&d.getMonth()===thisMonth&&d.getFullYear()===thisYear;}
+    if(period==='year'){const d=parseDate(e.date);return d&&d.getFullYear()===thisYear;}
+    return true;
+  });
+}
+
+function parseDate(s){
+  try{const p=s.split('/');return new Date(+p[2],+p[1]-1,+p[0]);}catch(e){return null;}
+}
+
+function aggregateOEE(entries){
+  if(!entries.length) return{avail:0,perf:0,qual:0,oee:0};
+  let ta=0,tp=0,tq=0,to=0;
+  entries.forEach(e=>{const r=calcOEE(e);ta+=r.avail;tp+=r.perf;tq+=r.qual;to+=r.oee;});
+  const n=entries.length;
+  return{avail:ta/n,perf:tp/n,qual:tq/n,oee:to/n};
+}
+
+let currentPeriod='today';
+function setPeriod(p,btn){
+  currentPeriod=p;
+  document.querySelectorAll('.period-sel .period-btn').forEach(b=>b.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+  refreshDashboard();
+}
+
+/* ══ CHARTS ═════════════════════════════════════════════════════ */
+const charts={};
+Chart.defaults.color='#4d6280';
+Chart.defaults.borderColor='#252d3d';
+Chart.defaults.font={family:'Inter',size:11};
+
+function makeLineChart(id,labels,datasets,opts={}){
+  const ctx=document.getElementById(id);if(!ctx)return;
+  if(charts[id])charts[id].destroy();
+  charts[id]=new Chart(ctx,{type:'line',data:{labels,datasets},options:{
+    responsive:true,maintainAspectRatio:false,
+    interaction:{intersect:false,mode:'index'},
+    plugins:{legend:{display:datasets.length>1,labels:{boxWidth:10,padding:12}},tooltip:{backgroundColor:'#1e2535',borderColor:'#252d3d',borderWidth:1}},
+    scales:{x:{grid:{color:'#1e2535'},ticks:{maxTicksLimit:8}},y:{grid:{color:'#1e2535'},min:0,max:100,ticks:{callback:v=>v+'%'}}},
+    elements:{line:{tension:.4},point:{radius:3,hoverRadius:5}},
+    ...opts
+  }});
+}
+
+function makeDonutChart(id,labels,data,colors){
+  const ctx=document.getElementById(id);if(!ctx)return;
+  if(charts[id])charts[id].destroy();
+  charts[id]=new Chart(ctx,{type:'doughnut',data:{labels,datasets:[{data,backgroundColor:colors,borderColor:'#12151c',borderWidth:2,hoverOffset:4}]},options:{
+    responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false},tooltip:{backgroundColor:'#1e2535',borderColor:'#252d3d',borderWidth:1}},
+    cutout:'68%'
+  }});
+}
+
+function makeBarChart(id,labels,datasets){
+  const ctx=document.getElementById(id);if(!ctx)return;
+  if(charts[id])charts[id].destroy();
+  charts[id]=new Chart(ctx,{type:'bar',data:{labels,datasets},options:{
+    responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false},tooltip:{backgroundColor:'#1e2535',borderColor:'#252d3d',borderWidth:1}},
+    scales:{x:{grid:{display:false}},y:{grid:{color:'#1e2535'},min:0,max:100,ticks:{callback:v=>v+'%'}}},
+    barThickness:16
+  }});
+}
+
+let chartPeriod='day';
+function setChartPeriod(p,btn){
+  chartPeriod=p;
+  document.querySelectorAll('#page-dashboard .period-sel')[1]?.querySelectorAll('.period-btn').forEach(b=>b.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+  buildTrendChart();
+}
+
+function buildTrendChart(){
+  const now=new Date();
+  let labels=[],avData=[],pfData=[],qlData=[],oeeData=[];
+  if(chartPeriod==='day'){
+    // last 14 days
+    for(let i=13;i>=0;i--){
+      const d=new Date(now);d.setDate(d.getDate()-i);
+      const ds=d.toLocaleDateString('en-GB');
+      const es=inputEntries.filter(e=>e.date===ds);
+      const ag=aggregateOEE(es);
+      labels.push(d.toLocaleDateString('en-GB',{month:'short',day:'numeric'}));
+      avData.push(pctN(ag.avail));pfData.push(pctN(ag.perf));qlData.push(pctN(ag.qual));oeeData.push(pctN(ag.oee));
+    }
+  } else if(chartPeriod==='month'){
+    for(let i=11;i>=0;i--){
+      const d=new Date(now.getFullYear(),now.getMonth()-i,1);
+      const es=inputEntries.filter(e=>{const pd=parseDate(e.date);return pd&&pd.getMonth()===d.getMonth()&&pd.getFullYear()===d.getFullYear();});
+      const ag=aggregateOEE(es);
+      labels.push(d.toLocaleDateString('en-GB',{month:'short',year:'2-digit'}));
+      avData.push(pctN(ag.avail));pfData.push(pctN(ag.perf));qlData.push(pctN(ag.qual));oeeData.push(pctN(ag.oee));
+    }
+  } else {
+    for(let i=4;i>=0;i--){
+      const yr=now.getFullYear()-i;
+      const es=inputEntries.filter(e=>{const pd=parseDate(e.date);return pd&&pd.getFullYear()===yr;});
+      const ag=aggregateOEE(es);
+      labels.push(yr+'');
+      avData.push(pctN(ag.avail));pfData.push(pctN(ag.perf));qlData.push(pctN(ag.qual));oeeData.push(pctN(ag.oee));
+    }
+  }
+  makeLineChart('chart-oee-trend',labels,[
+    {label:'OEE',data:oeeData,borderColor:'#3b82f6',backgroundColor:'rgba(59,130,246,.08)',fill:true},
+    {label:'Availability',data:avData,borderColor:'#10b981',backgroundColor:'transparent'},
+    {label:'Performance',data:pfData,borderColor:'#f59e0b',backgroundColor:'transparent'},
+    {label:'Quality',data:qlData,borderColor:'#8b5cf6',backgroundColor:'transparent'},
+  ]);
+}
+
+function buildPillarCharts(){
+  const now=new Date();
+  const labels=[],avD=[],pfD=[],qlD=[];
+  for(let i=9;i>=0;i--){
+    const d=new Date(now);d.setDate(d.getDate()-i);
+    const ds=d.toLocaleDateString('en-GB');
+    const es=inputEntries.filter(e=>e.date===ds);
+    const ag=aggregateOEE(es);
+    labels.push(d.toLocaleDateString('en-GB',{month:'short',day:'numeric'}));
+    avD.push(pctN(ag.avail));pfD.push(pctN(ag.perf));qlD.push(pctN(ag.qual));
+  }
+  makeLineChart('chart-avail',labels,[{data:avD,borderColor:'#10b981',backgroundColor:'rgba(16,185,129,.08)',fill:true}]);
+  makeLineChart('chart-perf',labels,[{data:pfD,borderColor:'#f59e0b',backgroundColor:'rgba(245,158,11,.08)',fill:true}]);
+  makeLineChart('chart-qual',labels,[{data:qlD,borderColor:'#8b5cf6',backgroundColor:'rgba(139,92,246,.08)',fill:true}]);
+}
+
+function buildLossDonut(){
+  const es=getEntriesForPeriod(currentPeriod);
+  if(!es.length){
+    makeDonutChart('chart-loss-donut',['No Data'],[1],['#252d3d']);
+    document.getElementById('loss-legend').innerHTML='<div style="color:var(--text3);font-size:12px;text-align:center">No data for this period</div>';
+    return;
+  }
+  let avLoss=0,pfLoss=0,qlLoss=0;
+  es.forEach(e=>{const r=calcOEE(e);avLoss+=(1-r.avail);pfLoss+=r.avail*(1-r.perf);qlLoss+=r.avail*r.perf*(1-r.qual);});
+  const n=es.length;
+  const ad=pctN(avLoss/n),pd=pctN(pfLoss/n),qd=pctN(qlLoss/n);
+  const avail=pctN(1-avLoss/n-pfLoss/n-qlLoss/n);
+  makeDonutChart('chart-loss-donut',
+    ['Availability Loss','Performance Loss','Quality Loss','OEE'],
+    [ad,pd,qd,Math.max(0,avail)],
+    ['#ef4444','#f59e0b','#8b5cf6','#10b981']
+  );
+  document.getElementById('loss-legend').innerHTML=`
+    <div class="loss-item"><div class="loss-dot" style="background:var(--red)"></div><div class="loss-name">Availability Loss</div><div class="loss-pct">${ad}%</div></div>
+    <div class="loss-item"><div class="loss-dot" style="background:var(--amber)"></div><div class="loss-name">Performance Loss</div><div class="loss-pct">${pd}%</div></div>
+    <div class="loss-item"><div class="loss-dot" style="background:var(--purple)"></div><div class="loss-name">Quality Loss</div><div class="loss-pct">${qd}%</div></div>
+    <div class="loss-item"><div class="loss-dot" style="background:var(--green)"></div><div class="loss-name">OEE Achieved</div><div class="loss-pct">${Math.max(0,avail)}%</div></div>
+  `;
+}
+
+/* ══ DASHBOARD REFRESH ══════════════════════════════════════════ */
+function setRingPct(id,pct,color){
+  const el=document.getElementById(id);if(!el)return;
+  const C=2*Math.PI*28;
+  el.style.stroke=color;
+  el.style.strokeDashoffset=C*(1-pct/100);
+}
+
+function refreshDashboard(){
+  const es=getEntriesForPeriod(currentPeriod);
+  const ag=aggregateOEE(es);
+  const av=pctN(ag.avail),pf=pctN(ag.perf),ql=pctN(ag.qual),oe=pctN(ag.oee);
+  document.getElementById('d-oee').textContent=oe;
+  document.getElementById('d-avail').textContent=av;
+  document.getElementById('d-perf').textContent=pf;
+  document.getElementById('d-qual').textContent=ql;
+  const b=oeeBadge(ag.oee);
+  const bd=document.getElementById('d-oee-badge');
+  bd.textContent=b.txt;bd.className='metric-badge '+b.cls;
+  ['d-avail-bar','d-perf-bar','d-qual-bar'].forEach((id,i)=>{
+    document.getElementById(id).style.width=[av,pf,ql][i]+'%';
+  });
+  setRingPct('mini-ring-oee',oe,oeeColor(ag.oee));
+  buildTrendChart();
+  buildPillarCharts();
+  buildLossDonut();
+  buildTopLosses();
+}
+
+function buildTopLosses(){
+  const dtMap={};
+  dtEntries.forEach(e=>{dtMap[e.reasonName]=(dtMap[e.reasonName]||0)+e.duration;});
+  const sorted=Object.entries(dtMap).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  const total=Object.values(dtMap).reduce((s,v)=>s+v,0)||1;
+  document.getElementById('top-losses-list').innerHTML=sorted.length?
+    sorted.map(([name,mins])=>`
+      <div class="loss-item">
+        <div class="loss-name">${name}</div>
+        <div class="loss-bar"><div class="progress"><div class="progress-fill" style="background:var(--red);width:${Math.round(mins/total*100)}%"></div></div></div>
+        <div class="loss-pct">${Math.round(mins/total*100)}%</div>
+        <div style="font-size:11px;color:var(--text3);min-width:50px;text-align:right">${mins} min</div>
+      </div>`).join(''):
+    '<div style="color:var(--text3);font-size:12px;padding:.5rem 0">No downtime data yet.</div>';
+}
+
+/* ══ AVAILABILITY PAGE ══════════════════════════════════════════ */
+function renderAvailability(){
+  const now=new Date();
+  const today=now.toLocaleDateString('en-GB');
+  const getAv=(es)=>aggregateOEE(es).avail;
+  const todayEs=inputEntries.filter(e=>e.date===today);
+  const monthEs=inputEntries.filter(e=>{const d=parseDate(e.date);return d&&d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();});
+  const yearEs=inputEntries.filter(e=>{const d=parseDate(e.date);return d&&d.getFullYear()===now.getFullYear();});
+  const av_t=pctN(getAv(todayEs)),av_m=pctN(getAv(monthEs)),av_y=pctN(getAv(yearEs));
+  document.getElementById('av-today').textContent=av_t;
+  document.getElementById('av-month').textContent=av_m;
+  document.getElementById('av-year').textContent=av_y;
+  const b=oeeBadge(getAv(todayEs));
+  const bd=document.getElementById('av-today-badge');bd.textContent=b.txt;bd.className='metric-badge '+b.cls;
+
+  // trend chart
+  const labels=[],avD=[];
+  for(let i=13;i>=0;i--){const d=new Date(now);d.setDate(d.getDate()-i);const ds=d.toLocaleDateString('en-GB');const es=inputEntries.filter(e=>e.date===ds);const ag=aggregateOEE(es);labels.push(d.toLocaleDateString('en-GB',{month:'short',day:'numeric'}));avD.push(pctN(ag.avail));}
+  makeLineChart('chart-av-trend',labels,[{data:avD,borderColor:'#10b981',backgroundColor:'rgba(16,185,129,.1)',fill:true}]);
+
+  // dept chart
+  const deptDt={ENG:0,PRO:0,QC:0};
+  dtEntries.forEach(e=>{if(deptDt[e.dept]!==undefined)deptDt[e.dept]+=e.duration;});
+  const total=Object.values(deptDt).reduce((s,v)=>s+v,1);
+  makeDonutChart('chart-av-dept',['Engineering','Production','Quality'],
+    [pctN(deptDt.ENG/total*100)/100*100,pctN(deptDt.PRO/total*100)/100*100,pctN(deptDt.QC/total*100)/100*100],
+    ['#3b82f6','#10b981','#f59e0b']);
+
+  // Shift config
+  const cfg=shiftCfg;
+  document.getElementById('cfg-day-shift').value=cfg.dayDur;
+  document.getElementById('cfg-night-shift').value=cfg.nightDur;
+  document.getElementById('cfg-day-breaks').value=cfg.dayBreaks;
+  document.getElementById('cfg-night-breaks').value=cfg.nightBreaks;
+  document.getElementById('cfg-cycle-time').value=cfg.cycleTime;
+  document.getElementById('cfg-shifts').value=cfg.shifts;
+
+  // Planned DT table
+  const planned=reasons.filter(r=>r.type==='Planned');
+  document.getElementById('planned-dt-table').innerHTML=planned.map(r=>`
+    <tr>
+      <td>${r.name}</td>
+      <td>${deptBadge(r.dept)}</td>
+      <td><input type="number" value="0" min="0" style="width:60px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;color:var(--text);padding:3px 6px;font-size:12px"></td>
+      <td><input type="number" value="0" min="0" style="width:60px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;color:var(--text);padding:3px 6px;font-size:12px"></td>
+      <td><span class="badge badge-plan">${r.type}</span></td>
+    </tr>`).join('');
+}
+
+function saveShiftConfig(){
+  shiftCfg={
+    dayDur:parseFloat(document.getElementById('cfg-day-shift').value)||12,
+    nightDur:parseFloat(document.getElementById('cfg-night-shift').value)||12,
+    dayBreaks:parseInt(document.getElementById('cfg-day-breaks').value)||140,
+    nightBreaks:parseInt(document.getElementById('cfg-night-breaks').value)||140,
+    cycleTime:parseFloat(document.getElementById('cfg-cycle-time').value)||125,
+    shifts:document.getElementById('cfg-shifts').value
+  };
+  sv(K.shiftCfg,shiftCfg);
+  updateInputPPT();
+  notify('Shift configuration saved!');
+}
+
+/* ══ PERFORMANCE PAGE ═══════════════════════════════════════════ */
+function renderPerformance(){
+  const now=new Date();
+  const today=now.toLocaleDateString('en-GB');
+  const getPf=(es)=>aggregateOEE(es).perf;
+  const todayEs=inputEntries.filter(e=>e.date===today);
+  const monthEs=inputEntries.filter(e=>{const d=parseDate(e.date);return d&&d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();});
+  const yearEs=inputEntries.filter(e=>{const d=parseDate(e.date);return d&&d.getFullYear()===now.getFullYear();});
+  document.getElementById('pf-today').textContent=pctN(getPf(todayEs));
+  document.getElementById('pf-month').textContent=pctN(getPf(monthEs));
+  document.getElementById('pf-year').textContent=pctN(getPf(yearEs));
+
+  const labels=[],pfD=[];
+  for(let i=13;i>=0;i--){const d=new Date(now);d.setDate(d.getDate()-i);const ds=d.toLocaleDateString('en-GB');const es=inputEntries.filter(e=>e.date===ds);labels.push(d.toLocaleDateString('en-GB',{month:'short',day:'numeric'}));pfD.push(pctN(getPf(es)));}
+  makeLineChart('chart-pf-trend',labels,[{data:pfD,borderColor:'#f59e0b',backgroundColor:'rgba(245,158,11,.1)',fill:true}]);
+
+  if(todayEs.length){
+    const last=todayEs[todayEs.length-1];
+    const r=calcOEE(last);
+    document.getElementById('pf-calc-detail').innerHTML=
+      `Ideal Rate: <b style="color:var(--amber)">${last.idealRate||shiftCfg.cycleTime} bags/min</b><br>
+       Run Time: <b style="color:var(--amber)">${r.operatingTime.toFixed(0)} min</b><br>
+       Plan Output: <b style="color:var(--amber)">${r.planOutput.toFixed(0)} bags</b><br>
+       Actual Output: <b style="color:var(--amber)">${last.totalCount||0} bags</b><br>
+       Performance: <b style="color:var(--green)">${pct(r.perf)}</b>`;
+  }
+}
+
+/* ══ QUALITY PAGE ═══════════════════════════════════════════════ */
+function renderQuality(){
+  const now=new Date();
+  const today=now.toLocaleDateString('en-GB');
+  const getQl=(es)=>aggregateOEE(es).qual;
+  const todayEs=inputEntries.filter(e=>e.date===today);
+  const monthEs=inputEntries.filter(e=>{const d=parseDate(e.date);return d&&d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();});
+  const yearEs=inputEntries.filter(e=>{const d=parseDate(e.date);return d&&d.getFullYear()===now.getFullYear();});
+  document.getElementById('ql-today').textContent=pctN(getQl(todayEs));
+  document.getElementById('ql-month').textContent=pctN(getQl(monthEs));
+  document.getElementById('ql-year').textContent=pctN(getQl(yearEs));
+
+  const labels=[],qlD=[];
+  for(let i=13;i>=0;i--){const d=new Date(now);d.setDate(d.getDate()-i);const ds=d.toLocaleDateString('en-GB');const es=inputEntries.filter(e=>e.date===ds);labels.push(d.toLocaleDateString('en-GB',{month:'short',day:'numeric'}));qlD.push(pctN(getQl(es)));}
+  makeLineChart('chart-ql-trend',labels,[{data:qlD,borderColor:'#8b5cf6',backgroundColor:'rgba(139,92,246,.1)',fill:true}]);
+
+  const goodTotal=inputEntries.reduce((s,e)=>s+(e.goodPcs||0),0);
+  const badTotal=inputEntries.reduce((s,e)=>s+(e.badPcs||0),0);
+  const rejTotal=inputEntries.reduce((s,e)=>s+(e.qualityRej||0),0);
+  makeDonutChart('chart-ql-rej',['Good','Rejected','Bad/Defect'],[goodTotal,rejTotal,badTotal],['#10b981','#ef4444','#f59e0b']);
+  document.getElementById('ql-stats').innerHTML=`
+    <div class="loss-item"><div class="loss-dot" style="background:var(--green)"></div><div class="loss-name">Good pieces</div><div class="loss-pct">${goodTotal.toLocaleString()}</div></div>
+    <div class="loss-item"><div class="loss-dot" style="background:var(--red)"></div><div class="loss-name">Rejected</div><div class="loss-pct">${rejTotal.toLocaleString()}</div></div>
+    <div class="loss-item"><div class="loss-dot" style="background:var(--amber)"></div><div class="loss-name">Bad/Defect</div><div class="loss-pct">${badTotal.toLocaleString()}</div></div>
+  `;
+}
+
+/* ══ DATA INPUT ═════════════════════════════════════════════════ */
+function updateInputPPT(){
+  const shift=document.getElementById('in-shift')?.value||'day';
+  const dur=shift==='day'?shiftCfg.dayDur:shiftCfg.nightDur;
+  const breaks=shift==='day'?shiftCfg.dayBreaks:shiftCfg.nightBreaks;
+  const ppt=dur*60-breaks;
+  const el=document.getElementById('in-ppt');if(el)el.value=ppt;
+  const ir=document.getElementById('in-ideal-rate');if(ir&&!ir.value)ir.value=shiftCfg.cycleTime;
+}
+
+function livePreview(){
+  const shift=document.getElementById('in-shift')?.value||'day';
+  const runTime=parseFloat(document.getElementById('in-run-time')?.value)||0;
+  const downtime=parseFloat(document.getElementById('in-downtime')?.value)||0;
+  const idealRate=parseFloat(document.getElementById('in-ideal-rate')?.value)||shiftCfg.cycleTime;
+  const totalCount=parseFloat(document.getElementById('in-total-count')?.value)||0;
+  const goodPcs=parseFloat(document.getElementById('in-good-pcs')?.value)||0;
+  const badPcs=parseFloat(document.getElementById('in-bad-pcs')?.value)||0;
+  const dur=shift==='day'?shiftCfg.dayDur:shiftCfg.nightDur;
+  const breaks=shift==='day'?shiftCfg.dayBreaks:shiftCfg.nightBreaks;
+  const ppt=dur*60-breaks;
+  const opTime=runTime||Math.max(0,ppt-downtime);
+  const goodActual=goodPcs||Math.max(0,totalCount-badPcs);
+  const tempEntry={shift,runTime:opTime,idealRate,totalCount,goodPcs:goodActual,badPcs,qualityRej:0};
+  const r=calcOEE(tempEntry);
+  document.getElementById('prev-avail').textContent=pct(r.avail);
+  document.getElementById('prev-perf').textContent=pct(r.perf);
+  document.getElementById('prev-qual').textContent=pct(r.qual);
+  document.getElementById('prev-oee').textContent=pct(r.oee);
+  document.getElementById('prev-avail').style.color=oeeColor(r.avail);
+  document.getElementById('prev-perf').style.color=oeeColor(r.perf);
+  document.getElementById('prev-qual').style.color=oeeColor(r.qual);
+  document.getElementById('prev-oee').style.color=oeeColor(r.oee);
+}
+['in-shift','in-run-time','in-downtime','in-ideal-rate','in-total-count','in-good-pcs','in-bad-pcs'].forEach(id=>{
+  document.getElementById(id)?.addEventListener('input',livePreview);
+  document.getElementById(id)?.addEventListener('change',()=>{updateInputPPT();livePreview();});
+});
+
+function saveInputEntry(){
+  const date=document.getElementById('in-date').value;
+  const machine=document.getElementById('in-machine').value;
+  if(!date||!machine){showAlert('input-alert','Please fill Date and Machine.','error');return;}
+  const entry={
+    id:Date.now(),
+    date:new Date(date).toLocaleDateString('en-GB'),
+    machine,shift:document.getElementById('in-shift').value,
+    product:document.getElementById('in-product').value,
+    ppt:parseFloat(document.getElementById('in-ppt').value)||0,
+    plannedDt:parseFloat(document.getElementById('in-planned-dt').value)||0,
+    runTime:parseFloat(document.getElementById('in-run-time').value)||0,
+    downtime:parseFloat(document.getElementById('in-downtime').value)||0,
+    idealRate:parseFloat(document.getElementById('in-ideal-rate').value)||shiftCfg.cycleTime,
+    totalCount:parseFloat(document.getElementById('in-total-count').value)||0,
+    plannedProd:parseFloat(document.getElementById('in-planned-prod').value)||0,
+    goodPcs:parseFloat(document.getElementById('in-good-pcs').value)||0,
+    badPcs:parseFloat(document.getElementById('in-bad-pcs').value)||0,
+    qualityRej:parseFloat(document.getElementById('in-quality-rej').value)||0
+  };
+  const r=calcOEE(entry);
+  entry.avail=r.avail;entry.perf=r.perf;entry.qual=r.qual;entry.oee=r.oee;
+  inputEntries.push(entry);sv(K.inputEntries,inputEntries);
+  syncGS({sheet:'Production Data',headers:['Date','Machine','Shift','Product','PPT','Run Time','Downtime','Ideal Rate','Total Count','Good Pcs','Bad Pcs','Availability%','Performance%','Quality%','OEE%'],
+    row:[entry.date,entry.machine,entry.shift,entry.product,entry.ppt,entry.runTime,entry.downtime,entry.idealRate,entry.totalCount,entry.goodPcs,entry.badPcs,pct(r.avail),pct(r.perf),pct(r.qual),pct(r.oee)]});
+  showAlert('input-alert',`✓ Entry saved — OEE: ${pct(r.oee)} | A:${pct(r.avail)} P:${pct(r.perf)} Q:${pct(r.qual)}`,'success');
+  notify(`OEE ${pct(r.oee)} saved for ${entry.machine}`);
+}
+
+function clearInputForm(){
+  ['in-date','in-machine','in-shift','in-product','in-ppt','in-planned-dt','in-run-time','in-downtime','in-ideal-rate','in-total-count','in-planned-prod','in-good-pcs','in-bad-pcs','in-quality-rej'].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.value='';
+  });
+  updateInputPPT();
+}
+
+/* ══ DOWNTIME LOG ════════════════════════════════════════════════ */
+let dtStartTime=null,dtEndTime=null,dtElapsedInt=null;
+
+function dtPressStart(){
+  dtStartTime=new Date();dtEndTime=null;
+  document.getElementById('dt-start-disp').textContent=dtStartTime.toLocaleTimeString('en-GB');
+  document.getElementById('dt-end-disp').textContent='Waiting...';
+  document.getElementById('dt-btn-start').className='timer-btn timer-start-active';
+  document.getElementById('dt-btn-end').className='timer-btn timer-end-ready';
+  document.getElementById('dt-btn-end').disabled=false;
+  document.getElementById('dt-elapsed').style.display='flex';
+  if(dtElapsedInt)clearInterval(dtElapsedInt);
+  dtElapsedInt=setInterval(()=>{
+    const s=Math.floor((new Date()-dtStartTime)/1000);
+    document.getElementById('dt-elapsed-val').textContent=String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');
+  },1000);
+}
+
+function dtPressEnd(){
+  if(!dtStartTime)return;
+  dtEndTime=new Date();
+  document.getElementById('dt-end-disp').textContent=dtEndTime.toLocaleTimeString('en-GB');
+  if(dtElapsedInt){clearInterval(dtElapsedInt);dtElapsedInt=null;}
+  document.getElementById('dt-elapsed').style.display='none';
+  document.getElementById('dt-btn-start').className='timer-btn timer-start-idle';
+  document.getElementById('dt-btn-end').className='timer-btn timer-end-idle';
+  document.getElementById('dt-btn-end').disabled=true;
+  const dur=Math.max(1,Math.round((dtEndTime-dtStartTime)/60000));
+  document.getElementById('dt-dur-badge').textContent='Duration: '+dur+' min';
+}
+
+function dtSave(){
+  const machine=document.getElementById('dt-machine').value;
+  const reasonId=parseInt(document.getElementById('dt-reason').value);
+  if(!machine){showAlert('dt-alert','Select a machine.','error');return;}
+  if(!dtStartTime){showAlert('dt-alert','Press START button first.','error');return;}
+  if(!dtEndTime){showAlert('dt-alert','Press END button to stop timer.','error');return;}
+  if(!reasonId){showAlert('dt-alert','Select a downtime reason.','error');return;}
+  const reason=reasons.find(r=>r.id===reasonId);
+  const dur=Math.max(1,Math.round((dtEndTime-dtStartTime)/60000));
+  const entry={
+    id:Date.now(),
+    date:document.getElementById('dt-date').value?new Date(document.getElementById('dt-date').value).toLocaleDateString('en-GB'):new Date().toLocaleDateString('en-GB'),
+    machine,shift:document.getElementById('dt-shift').value,
+    reasonId,reasonName:reason.name,dept:reason.dept,type:reason.type,
+    start:dtStartTime.toLocaleTimeString('en-GB'),end:dtEndTime.toLocaleTimeString('en-GB'),
+    duration:dur,remarks:document.getElementById('dt-remarks').value
+  };
+  dtEntries.push(entry);sv(K.dtEntries,dtEntries);
+  syncGS({sheet:'Downtime Log',headers:['Date','Machine','Shift','Reason','Department','Type','Start','End','Duration(min)','Remarks'],
+    row:[entry.date,entry.machine,entry.shift,entry.reasonName,entry.dept,entry.type,entry.start,entry.end,entry.duration,entry.remarks]});
+  showAlert('dt-alert',`✓ Downtime saved — ${reason.name} (${dur} min)`,'success');
+  dtStartTime=null;dtEndTime=null;
+  document.getElementById('dt-start-disp').textContent='Press to begin';
+  document.getElementById('dt-end-disp').textContent='Waiting...';
+  document.getElementById('dt-dur-badge').textContent='';
+  document.getElementById('dt-remarks').value='';
+  document.getElementById('dt-reason').value='';
+  renderDtToday();
+}
+
+function renderDtToday(){
+  const today=new Date().toLocaleDateString('en-GB');
+  const es=dtEntries.filter(e=>e.date===today).slice().reverse();
+  const el=document.getElementById('dt-today-table');
+  if(!es.length){el.innerHTML='<div style="text-align:center;padding:2rem;color:var(--text3)">No downtime entries today.</div>';return;}
+  el.innerHTML=`<table><thead><tr><th>Start</th><th>End</th><th>Machine</th><th>Reason</th><th>Dept</th><th>Duration</th><th>Remarks</th><th></th></tr></thead><tbody>
+    ${es.map(e=>`<tr>
+      <td style="font-family:var(--font-mono)">${e.start}</td>
+      <td style="font-family:var(--font-mono)">${e.end}</td>
+      <td>${e.machine}</td>
+      <td>${e.reasonName}</td>
+      <td>${deptBadge(e.dept)}</td>
+      <td style="font-family:var(--font-mono);font-weight:700;color:var(--amber)">${e.duration} min</td>
+      <td style="color:var(--text3)">${e.remarks||'—'}</td>
+      <td><button class="btn btn-red btn-icon" style="padding:4px 8px" onclick="deleteDt(${e.id})">🗑</button></td>
+    </tr>`).join('')}
+  </tbody></table>`;
+}
+
+function deleteDt(id){
+  if(!confirm('Delete this entry?'))return;
+  dtEntries=dtEntries.filter(e=>e.id!==id);sv(K.dtEntries,dtEntries);
+  renderDtToday();notify('Entry deleted','info');
+}
+
+/* ══ RECORDS ════════════════════════════════════════════════════ */
+function updateRecordFilters(){
+  const sel=document.getElementById('rec-filter-machine');
+  sel.innerHTML='<option value="">All machines</option>';
+  machines.forEach(m=>{const o=document.createElement('option');o.value=m;o.textContent=m;sel.appendChild(o);});
+}
+
+function renderRecords(){
+  const fm=document.getElementById('rec-filter-machine')?.value||'';
+  const fs=document.getElementById('rec-filter-shift')?.value||'';
+  const fmo=document.getElementById('rec-filter-month')?.value||'';
+  let es=inputEntries.filter(e=>{
+    if(fm&&e.machine!==fm)return false;
+    if(fs&&e.shift!==fs)return false;
+    if(fmo){const d=parseDate(e.date);const[yr,mo]=fmo.split('-');if(!d||d.getFullYear()!==parseInt(yr)||d.getMonth()!==parseInt(mo)-1)return false;}
+    return true;
+  }).slice().reverse();
+  const el=document.getElementById('records-table');
+  if(!es.length){el.innerHTML='<div style="text-align:center;padding:2rem;color:var(--text3)">No records found.</div>';return;}
+  el.innerHTML=`<table><thead><tr><th>#</th><th>Date</th><th>Machine</th><th>Shift</th><th>Product</th><th>Run Time</th><th>Total Pcs</th><th>Good Pcs</th><th>Avail</th><th>Perf</th><th>Qual</th><th>OEE</th><th></th></tr></thead><tbody>
+    ${es.map((e,i)=>{const r=calcOEE(e);return`<tr>
+      <td style="color:var(--text3)">${i+1}</td>
+      <td style="white-space:nowrap">${e.date}</td>
+      <td>${e.machine}</td>
+      <td><span class="badge ${e.shift==='day'?'badge-pro':'badge-eng'}">${e.shift}</span></td>
+      <td>${e.product||'—'}</td>
+      <td style="font-family:var(--font-mono)">${e.runTime} min</td>
+      <td style="font-family:var(--font-mono)">${(e.totalCount||0).toLocaleString()}</td>
+      <td style="font-family:var(--font-mono)">${(e.goodPcs||0).toLocaleString()}</td>
+      <td style="color:var(--green);font-weight:700">${pct(r.avail)}</td>
+      <td style="color:var(--amber);font-weight:700">${pct(r.perf)}</td>
+      <td style="color:var(--purple);font-weight:700">${pct(r.qual)}</td>
+      <td style="color:var(--blue);font-weight:700">${pct(r.oee)}</td>
+      <td style="display:flex;gap:4px">
+        <button class="btn btn-ghost btn-icon" style="padding:4px 8px" onclick="deleteInputEntry(${e.id})">🗑</button>
+      </td>
+    </tr>`}).join('')}
+  </tbody></table>`;
+}
+
+function deleteInputEntry(id){
+  if(!confirm('Delete this entry?'))return;
+  inputEntries=inputEntries.filter(e=>e.id!==id);sv(K.inputEntries,inputEntries);
+  renderRecords();notify('Entry deleted','info');
+}
+
+/* ══ CALCULATIONS PAGE ══════════════════════════════════════════ */
+function renderCalc(){
+  const cfg=shiftCfg;
+  document.getElementById('calc-ppt-detail').innerHTML=
+    `Day Shift: ${cfg.dayDur}h × 60 = ${cfg.dayDur*60} min<br>
+     Day Breaks: ${cfg.dayBreaks} min → Day PPT: <b style="color:var(--cyan)">${cfg.dayDur*60-cfg.dayBreaks} min</b><br>
+     Night Shift: ${cfg.nightDur}h × 60 = ${cfg.nightDur*60} min<br>
+     Night Breaks: ${cfg.nightBreaks} min → Night PPT: <b style="color:var(--cyan)">${cfg.nightDur*60-cfg.nightBreaks} min</b><br>
+     Ideal Cycle Time: <b style="color:var(--cyan)">${cfg.cycleTime} bags/min</b>`;
+
+  if(inputEntries.length){
+    const last=inputEntries[inputEntries.length-1];
+    const r=calcOEE(last);
+    document.getElementById('calc-live-detail').innerHTML=`
+      <b style="color:var(--blue)">Latest Entry — ${last.date} | ${last.machine}</b><br>
+      PPT: ${r.ppt.toFixed(0)} min | Op.Time: ${r.operatingTime.toFixed(0)} min<br>
+      <b style="color:var(--green)">Availability</b> = ${r.operatingTime.toFixed(0)} / ${r.ppt.toFixed(0)} = <b>${pct(r.avail)}</b><br>
+      Plan Output: ${r.planOutput.toFixed(0)} bags | Actual: ${last.totalCount||0} bags<br>
+      <b style="color:var(--amber)">Performance</b> = ${last.totalCount||0} / ${r.planOutput.toFixed(0)} = <b>${pct(r.perf)}</b><br>
+      Good Pcs: ${last.goodPcs||0} | Total: ${last.totalCount||0}<br>
+      <b style="color:var(--purple)">Quality</b> = ${last.goodPcs||0} / ${last.totalCount||0} = <b>${pct(r.qual)}</b><br>
+      <hr style="border-color:var(--border);margin:.5rem 0">
+      <b style="color:var(--blue)">OEE</b> = ${pct(r.avail)} × ${pct(r.perf)} × ${pct(r.qual)} = <b style="font-size:16px">${pct(r.oee)}</b>`;
+  }
+}
+
+/* ══ LOSS ANALYSIS ══════════════════════════════════════════════ */
+function deptBadge(d){
+  const m={ENG:'badge-eng',PRO:'badge-pro',QC:'badge-qc'};
+  const labels={ENG:'Engineering',PRO:'Production',QC:'Quality'};
+  return`<span class="badge ${m[d]||'badge-plan'}">${labels[d]||d}</span>`;
+}
+function typeBadge(t){
+  if(t==='Planned')return'<span class="badge badge-plan">Planned</span>';
+  if(t==='Changeover loss')return'<span class="badge badge-co">Changeover</span>';
+  return'<span class="badge badge-eng">Availability</span>';
+}
+
+function renderLossPage(){
+  document.getElementById('loss-reason-count').textContent=reasons.length;
+
+  // category chart
+  const cats={ENG:0,PRO:0,QC:0};
+  dtEntries.forEach(e=>{if(cats[e.dept]!==undefined)cats[e.dept]+=e.duration;});
+  const total=Object.values(cats).reduce((s,v)=>s+v,1);
+  makeBarChart('chart-loss-cat',['Engineering','Production','Quality'],
+    [{data:[pctN(cats.ENG/total*100),pctN(cats.PRO/total*100),pctN(cats.QC/total*100)],backgroundColor:['#3b82f6','#10b981','#f59e0b'],borderRadius:4}]);
+
+  // top reasons
+  const reasonMap={};
+  dtEntries.forEach(e=>{reasonMap[e.reasonName]=(reasonMap[e.reasonName]||0)+e.duration;});
+  const sorted=Object.entries(reasonMap).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  const rTotal=Object.values(reasonMap).reduce((s,v)=>s+v,1);
+  document.getElementById('loss-reasons-list').innerHTML=sorted.length?
+    sorted.map(([name,mins],i)=>`
+      <div class="loss-item">
+        <div style="font-size:11px;font-weight:700;color:var(--text3);min-width:18px">#${i+1}</div>
+        <div class="loss-name">${name}</div>
+        <div class="loss-bar"><div class="progress"><div class="progress-fill" style="background:var(--red);width:${Math.round(mins/rTotal*100)}%"></div></div></div>
+        <div class="loss-pct">${mins}m</div>
+      </div>`).join(''):
+    '<div style="color:var(--text3);font-size:12px">No downtime data yet.</div>';
+
+  // reasons table
+  document.getElementById('loss-reasons-table').innerHTML=`<table>
+    <thead><tr><th>#</th><th>Reason</th><th>Department</th><th>Loss Type</th><th>Times Occurred</th><th>Total (min)</th><th></th></tr></thead>
+    <tbody>${reasons.map(r=>{
+      const times=dtEntries.filter(e=>e.reasonId===r.id).length;
+      const totalMins=dtEntries.filter(e=>e.reasonId===r.id).reduce((s,e)=>s+e.duration,0);
+      return`<tr>
+        <td style="color:var(--text3)">${r.id}</td>
+        <td>${r.name}</td><td>${deptBadge(r.dept)}</td><td>${typeBadge(r.type)}</td>
+        <td style="font-family:var(--font-mono);color:var(--text)">${times}</td>
+        <td style="font-family:var(--font-mono);color:var(--amber)">${totalMins}</td>
+        <td><button class="btn btn-red btn-icon" style="padding:4px 8px" onclick="deleteReason(${r.id})">🗑</button></td>
+      </tr>`;}).join('')}
+    </tbody></table>`;
+}
+
+function openAddReason(){document.getElementById('loss-add-form').classList.toggle('hidden');}
+function saveLossReason(){
+  const name=document.getElementById('lr-name').value.trim();
+  if(!name){notify('Enter a reason name','error');return;}
+  const maxId=reasons.reduce((m,r)=>Math.max(m,r.id),0);
+  reasons.push({id:maxId+1,name,dept:document.getElementById('lr-dept').value,type:document.getElementById('lr-type').value});
+  sv(K.reasons,reasons);
+  document.getElementById('lr-name').value='';
+  renderLossPage();renderDtReasonSelect();notify('Reason added');
+}
+function deleteReason(id){
+  if(!confirm('Delete this reason?'))return;
+  reasons=reasons.filter(r=>r.id!==id);sv(K.reasons,reasons);
+  renderLossPage();renderDtReasonSelect();notify('Reason removed','info');
+}
+
+/* ══ SETTINGS ═══════════════════════════════════════════════════ */
+function toggleCurPw(){document.getElementById('cfg-cur-pw-wrap').classList.toggle('hidden');}
+
+function renderSettings(){
+  document.getElementById('cfg-main-name').value=users.main.name;
+  document.getElementById('cfg-logger-name').value=users.logger.name;
+  document.getElementById('gs-url-input').value=gsUrl;
+  renderMachineList();renderProductList();
+}
+
+function saveUserSettings(){
+  const curPw=document.getElementById('cfg-cur-pw').value;
+  if(curPw!==users.main.password){showAlert('settings-pw-alert','Incorrect current password.','error');return;}
+  const mn=document.getElementById('cfg-main-name').value.trim();
+  const mp=document.getElementById('cfg-main-pw').value;
+  const ln=document.getElementById('cfg-logger-name').value.trim();
+  const lp=document.getElementById('cfg-logger-pw').value;
+  if(mn)users.main.name=mn;
+  if(mp&&mp.length>=6)users.main.password=mp;
+  if(ln)users.logger.name=ln;
+  if(lp&&lp.length>=6)users.logger.password=lp;
+  sv(K.users,users);
+  document.getElementById('cfg-cur-pw').value='';
+  document.getElementById('cfg-cur-pw-wrap').classList.add('hidden');
+  showAlert('settings-pw-alert','✓ User settings saved!','success');
+  notify('Users updated');
+}
+
+function renderMachineList(){
+  document.getElementById('machine-list').innerHTML=machines.map((m,i)=>`
+    <div style="display:flex;align-items:center;gap:8px;padding:6px;background:var(--bg3);border-radius:6px;margin-bottom:4px;border:1px solid var(--border)">
+      <span style="flex:1;font-size:12px">${m}</span>
+      <button class="btn btn-red btn-icon" style="padding:3px 7px;font-size:11px" onclick="removeMachine(${i})">✕</button>
+    </div>`).join('');
+}
+
+function addMachine(){
+  const n=document.getElementById('new-machine').value.trim();
+  if(!n||machines.includes(n))return;
+  machines.push(n);sv(K.machines,machines);
+  document.getElementById('new-machine').value='';
+  renderMachineList();updateAllMachineSelects();notify('Machine added');
+}
+
+function removeMachine(i){
+  machines.splice(i,1);sv(K.machines,machines);
+  renderMachineList();updateAllMachineSelects();
+}
+
+function renderProductList(){
+  document.getElementById('product-list').innerHTML=products.map((p,i)=>`
+    <div style="display:flex;align-items:center;gap:8px;padding:6px;background:var(--bg3);border-radius:6px;margin-bottom:4px;border:1px solid var(--border)">
+      <span style="font-size:11px;color:var(--text3);min-width:50px;font-family:var(--font-mono)">${p.code}</span>
+      <span style="flex:1;font-size:12px">${p.name}</span>
+      <button class="btn btn-red btn-icon" style="padding:3px 7px;font-size:11px" onclick="removeProduct(${i})">✕</button>
+    </div>`).join('');
+}
+
+function addProduct(){
+  const code=document.getElementById('new-product-code').value.trim().toUpperCase();
+  const name=document.getElementById('new-product-name').value.trim();
+  if(!code||!name)return;
+  products.push({code,name});sv(K.products,products);
+  document.getElementById('new-product-code').value='';document.getElementById('new-product-name').value='';
+  renderProductList();updateProductSelects();notify('Product added');
+}
+
+function removeProduct(i){
+  products.splice(i,1);sv(K.products,products);
+  renderProductList();updateProductSelects();
+}
+
+function updateAllMachineSelects(){
+  ['in-machine','dt-machine','rec-filter-machine'].forEach(id=>{
+    const sel=document.getElementById(id);if(!sel)return;
+    const cur=sel.value;
+    sel.innerHTML='<option value="">— select —</option>';
+    machines.forEach(m=>{const o=document.createElement('option');o.value=m;o.textContent=m;sel.appendChild(o);});
+    sel.value=cur;
+  });
+}
+
+function updateProductSelects(){
+  const sel=document.getElementById('in-product');if(!sel)return;
+  const cur=sel.value;
+  sel.innerHTML='<option value="">— select —</option>';
+  products.forEach(p=>{const o=document.createElement('option');o.value=p.code;o.textContent=p.code+' — '+p.name;sel.appendChild(o);});
+  sel.value=cur;
+}
+
+function renderDtReasonSelect(){
+  const sel=document.getElementById('dt-reason');if(!sel)return;
+  sel.innerHTML='<option value="">— select reason —</option>';
+  const groups={ENG:[],PRO:[],QC:[]};
+  reasons.forEach(r=>{(groups[r.dept]||groups['ENG']).push(r);});
+  [['ENG','Engineering'],['PRO','Production'],['QC','Quality']].forEach(([k,label])=>{
+    if(!groups[k].length)return;
+    const og=document.createElement('optgroup');og.label=label;
+    groups[k].forEach(r=>{const o=document.createElement('option');o.value=r.id;o.textContent=r.name;og.appendChild(o);});
+    sel.appendChild(og);
+  });
+}
+
+/* ══ GOOGLE SHEETS ══════════════════════════════════════════════ */
+function saveGsUrl(){
+  gsUrl=document.getElementById('gs-url-input').value.trim();
+  localStorage.setItem(K.gsurl,gsUrl);
+  notify('Google Sheets URL saved');
+}
+
+function testGsUrl(){
+  if(!gsUrl){showGsStatus('No URL saved.','error');return;}
+  showGsStatus('Testing connection...','info');
+  fetch(gsUrl+'?test=1',{method:'GET',mode:'no-cors'})
+    .then(()=>showGsStatus('✓ Request sent! Check your sheet for new data.','success'))
+    .catch(()=>showGsStatus('✗ Connection failed. Check URL and deployment.','error'));
+}
+
+function showGsStatus(msg,type){
+  const el=document.getElementById('gs-status');
+  el.style.display='block';el.textContent=msg;
+  el.className='alert '+(type==='success'?'alert-success':type==='error'?'alert-danger':'alert-info');
+}
+
+function syncGS(payload){
+  if(!gsUrl)return;
+  fetch(gsUrl,{method:'POST',body:JSON.stringify(payload),headers:{'Content-Type':'text/plain'},mode:'no-cors'}).catch(()=>{});
+}
+
+function copyGsCode(){
+  const code=document.getElementById('gs-code').textContent;
+  if(navigator.clipboard){navigator.clipboard.writeText(code).then(()=>notify('Code copied!'));}
+  else{
+    const ta=document.createElement('textarea');ta.value=code;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);notify('Code copied!');
+  }
+}
+
+/* ══ EXPORT ═════════════════════════════════════════════════════ */
+function exportAllCSV(){
+  if(!inputEntries.length){notify('No data to export','error');return;}
+  const header=['Date','Machine','Shift','Product','PPT','Run Time','Downtime','Ideal Rate','Total Count','Good Pcs','Bad Pcs','Quality Rej','Availability%','Performance%','Quality%','OEE%'];
+  const rows=inputEntries.map(e=>{const r=calcOEE(e);return[e.date,e.machine,e.shift,e.product||'',e.ppt,e.runTime,e.downtime,e.idealRate,e.totalCount,e.goodPcs,e.badPcs,e.qualityRej,pct(r.avail),pct(r.perf),pct(r.qual),pct(r.oee)];});
+  downloadCSV([header,...rows],'OEE_Production_Data_'+Date.now()+'.csv');
+}
+
+function exportDowntimeCSV(){
+  if(!dtEntries.length){notify('No downtime data','error');return;}
+  const header=['Date','Machine','Shift','Start','End','Duration(min)','Reason','Department','Type','Remarks'];
+  const rows=dtEntries.map(e=>[e.date,e.machine,e.shift,e.start,e.end,e.duration,e.reasonName,e.dept,e.type,e.remarks||'']);
+  downloadCSV([header,...rows],'OEE_Downtime_Log_'+Date.now()+'.csv');
+}
+
+function downloadCSV(rows,filename){
+  const csv='\uFEFF'+rows.map(r=>r.map(c=>{const s=String(c==null?'':c);return s.includes(',')||s.includes('"')||s.includes('\n')?'"'+s.replace(/"/g,'""')+'"':s;}).join(',')).join('\r\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
+  a.download=filename;document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(a.href);
+  notify('CSV downloaded — open in Excel');
+}
+
+function exportBackupJSON(){
+  const data={exported:new Date().toISOString(),version:'2.0',inputEntries,dtEntries,reasons,machines,products,shiftCfg};
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));
+  a.download='OEE_Backup_'+Date.now()+'.json';document.body.appendChild(a);a.click();document.body.removeChild(a);
+  notify('Backup JSON downloaded');
+}
+
+/* ══ RESET ══════════════════════════════════════════════════════ */
+function resetAllData(){
+  const rUser=document.getElementById('reset-username').value.trim();
+  const rPw=document.getElementById('reset-password').value;
+  if(rUser!==users.main.name||rPw!==users.main.password){notify('Incorrect username or password','error');return;}
+  if(!confirm('PERMANENTLY delete all OEE data? This cannot be undone!'))return;
+  if(!confirm('Last confirmation — delete everything?'))return;
+  inputEntries=[];dtEntries=[];
+  sv(K.inputEntries,[]);sv(K.dtEntries,[]);
+  document.getElementById('reset-username').value='';document.getElementById('reset-password').value='';
+  notify('All data reset','info');
+}
+
+/* ══ HELPERS ════════════════════════════════════════════════════ */
+function showAlert(id,msg,type){
+  const el=document.getElementById(id);if(!el)return;
+  el.textContent=msg;el.className='alert '+(type==='success'?'alert-success':type==='error'?'alert-danger':'alert-info');
+  el.classList.remove('hidden');
+  if(type==='success')setTimeout(()=>el.classList.add('hidden'),5000);
+}
+
+/* ══ INIT ═══════════════════════════════════════════════════════ */
+function initApp(){
+  // set today's date defaults
+  const today=new Date().toISOString().split('T')[0];
+  document.getElementById('in-date').value=today;
+  document.getElementById('dt-date').value=today;
+  updateAllMachineSelects();
+  updateProductSelects();
+  renderDtReasonSelect();
+  updateInputPPT();
+  document.getElementById('in-ideal-rate').value=shiftCfg.cycleTime;
+  refreshDashboard();
+}
+</script>
+</body>
+</html>
